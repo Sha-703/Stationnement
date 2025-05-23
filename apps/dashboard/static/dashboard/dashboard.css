@@ -1,0 +1,151 @@
+/* Palette inspirée de la maquette */
+:root {
+  --sidebar-bg: #181f2a;
+  --sidebar-active: #232b39;
+  --sidebar-text: #fff;
+  --sidebar-muted: #b0b8c1;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --success: #22c55e;
+  --warning: #facc15;
+  --danger: #ef4444;
+  --info: #0ea5e9;
+  --card-bg: #fff;
+  --card-border: #e5e7eb;
+  --table-header: #f3f4f6;
+  --table-row: #f9fafb;
+  --font-main: 'Inter', Arial, sans-serif;
+}
+
+body {
+  font-family: var(--font-main);
+  background: #f3f4f6;
+  color: #181f2a;
+}
+
+.sidebar {
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  min-height: 100vh;
+  width: 220px;
+  position: fixed;
+  top: 0; left: 0;
+  z-index: 100;
+  padding-top: 2rem;
+}
+.sidebar .nav-link {
+  color: var(--sidebar-muted);
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  display: block;
+  transition: background 0.2s, color 0.2s;
+}
+.sidebar .nav-link.active, .sidebar .nav-link:hover {
+  background: var(--sidebar-active);
+  color: var(--sidebar-text);
+}
+.sidebar .navbar-brand {
+  font-weight: bold;
+  font-size: 1.3rem;
+  color: var(--sidebar-text);
+  margin-bottom: 2rem;
+  display: block;
+  text-align: center;
+}
+
+.main-content {
+  margin-left: 220px;
+  padding: 2rem 2rem 2rem 2.5rem;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(24,31,42,0.04);
+  margin-bottom: 2rem;
+}
+.card-title {
+  font-weight: 600;
+  color: #181f2a;
+}
+
+.btn-primary {
+  background: var(--primary);
+  border: none;
+  color: #fff;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 0.5rem 1.5rem;
+  transition: background 0.2s;
+}
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+.table {
+  background: var(--card-bg);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.table thead {
+  background: var(--table-header);
+  font-weight: 600;
+}
+.table tbody tr {
+  background: var(--table-row);
+  transition: background 0.2s;
+}
+.table tbody tr:hover {
+  background: #e0e7ef;
+}
+.table td, .table th {
+  border: none;
+  padding: 0.75rem 1rem;
+}
+
+.status-active {
+  color: var(--success);
+  font-weight: 600;
+}
+.status-offline {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.form-control, .form-select {
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
+  font-size: 1rem;
+}
+
+/* Pour les titres de section */
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+/* Pour les petits badges de statut */
+.badge-status {
+  border-radius: 8px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  background: #f3f4f6;
+  color: var(--success);
+}
+.badge-status.offline {
+  color: var(--danger);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  background: #e5e7eb;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 8px;
+}

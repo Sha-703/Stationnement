@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Tableau de Bord{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Dashboard</h1>
+    <div class="row text-center">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Ventes</h5>
+                    <p class="card-text fs-4">{{ total_transactions|intcomma }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Vendeurs</h5>
+                    <p class="card-text fs-4">{{ total_sellers|intcomma }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Produits</h5>
+                    <p class="card-text fs-4">{{ total_products|intcomma }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Terminaux</h5>
+                    <p class="card-text fs-4">{{ total_pos|default:0|intcomma }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row text-center">
+        <div class="col-md-3 mx-auto">
+            <div class="card text-white bg-dark mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Revenu Total</h5>
+                    <p class="card-text fs-4">{{ total_sales|floatformat:3|intcomma }} Fc</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4 mb-2">
+        <div class="col-md-6">
+            <form id="filterForm" class="d-flex align-items-center">
+                <label for="filter" class="me-2">Filtrer par :</label>
+                <select id="filter" name="filter" class="form-select w-auto">
+                    <option value="daily" {% if request.GET.filter == 'daily' %}selected{% endif %}>Jour</option>
+                    <option value="monthly" {% if request.GET.filter == 'monthly' or not request.GET.filter %}selected{% endif %}>Mois</option>
+                    <option value="yearly" {% if request.GET.filter == 'yearly' %}selected{% endif %}>Année</option>
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Ventes au fil du temps</h5>
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Répartition des ventes</h5>
+                    <canvas id="salesPieChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gestion du filtre
+        document.getElementById('filter').addEventListener('change', function() {
+            document.getElementById('filterForm').submit();
+        });
+
+        // Données pour le graphique des ventes au fil du temps
+        console.log('sales_chart_data.labels:', '{{ sales_chart_data.labels|escapejs }}');
+        console.log('sales_chart_data.data:', '{{ sales_chart_data.data|escapejs }}');
+        const salesChartData = {
+            labels: JSON.parse('{{ sales_chart_data.labels|escapejs }}'),
+            datasets: [{
+                label: 'Ventes',
+                data: JSON.parse('{{ sales_chart_data.data|escapejs }}'),
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.2)',
+            }],
+        };
+
+        // Données pour le graphique en camembert (répartition dynamique par vendeur)
+        console.log('pie_chart_data.labels:', '{{ pie_chart_data.labels|escapejs }}');
+        console.log('pie_chart_data.data:', '{{ pie_chart_data.data|escapejs }}');
+        const pieData = {
+            labels: JSON.parse('{{ pie_chart_data.labels|escapejs }}'),
+            datasets: [{
+                data: JSON.parse('{{ pie_chart_data.data|escapejs }}'),
+                backgroundColor: [
+                    '#007bff', '#17a2b8', '#28a745', '#ffc107', '#dc3545', '#6f42c1', '#fd7e14', '#20c997', '#6610f2', '#e83e8c'
+                ].slice(0, JSON.parse('{{ pie_chart_data.labels|escapejs }}').length),
+            }],
+        };
+
+        // Initialisation des graphiques
+        const salesChart = new Chart(document.getElementById('salesChart'), {
+            type: 'line',
+            data: salesChartData,
+        });
+
+        const salesPieChart = new Chart(document.getElementById('salesPieChart'), {
+            type: 'pie',
+            data: pieData,
+        });
+    });
+</script>
+{% endblock %}
