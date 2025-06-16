@@ -125,10 +125,10 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Autorise toutes les origines (pour test/démo mobile)
 CORS_ALLOW_ALL_ORIGINS = True
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8081",  # Origine de votre application mobile
-    "http://127.0.0.1:8081",
-    "https://app.flutterflow.io",  # <-- Corrigé, seulement le domaine
-]
+# Pour production, tu peux restreindre à :
+# CORS_ALLOWED_ORIGINS = [
+#     "https://stationnement.onrender.com/",
+#     "file://",
+# ]
