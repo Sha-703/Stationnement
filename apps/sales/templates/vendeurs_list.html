@@ -11,7 +11,6 @@
             <tr>
                 <th>Nom</th>
                 <th>Email</th>
-                <th>Sexe</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -20,7 +19,6 @@
             <tr>
                 <td>{{ vendeur.nom_du_vendeur }}</td>
                 <td>{{ vendeur.email }}</td>
-                <td>{{ vendeur.get_Sexe_display }}</td>
                 <td>
                     <a href="{% url 'vendeur_update' vendeur.id %}" class="btn btn-warning btn-sm">Modifier</a>
                     <a href="{% url 'vendeur_delete' vendeur.id %}" class="btn btn-danger btn-sm">Supprimer</a>

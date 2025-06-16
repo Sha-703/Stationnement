@@ -4,7 +4,9 @@ from .views import (
     SalesListView, SalesDetailView, CreateSaleView, ValidateSaleView, LoginView, ProductListView, InvoiceDetailView,
     vendeur_list_view, vendeur_create_view, vendeur_update_view, vendeur_delete_view,
     produit_list_view, produit_create_view, produit_update_view, produit_delete_view,
-    POSViewSet, POSCreateView, update_pos_status, pos_list_view
+    POSViewSet, POSCreateView, update_pos_status, pos_list_view,
+    identification_vendeur, effectuer_vente, voir_facture,
+    pos_delete_view
 )
 
 router = DefaultRouter()
@@ -31,9 +33,15 @@ urlpatterns = [
     path('produits/modifier/<int:pk>/', produit_update_view, name='produit_update'),
     path('produits/supprimer/<int:pk>/', produit_delete_view, name='produit_delete'),
 
+    path('pos/delete/<int:pk>/', pos_delete_view, name='delete_pos'),
     path('pos/add/', POSCreateView.as_view(), name='add_pos'),
     path('pos/<int:pos_id>/update-status/', update_pos_status, name='update_pos_status'),
     path('pos/', pos_list_view, name='pos_list'),
+
+    # Routes POS pour vente rapide
+    path('vente/identification/', identification_vendeur, name='identification_vendeur'),
+    path('vente/creer/', effectuer_vente, name='effectuer_vente'),
+    path('vente/facture/<int:pk>/', voir_facture, name='voir_facture'),
 
     path('', include(router.urls)),
 ]

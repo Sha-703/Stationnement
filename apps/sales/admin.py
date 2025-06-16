@@ -8,8 +8,8 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Vendeur)
 class SellerAdmin(admin.ModelAdmin):
-    list_display = ('nom_du_vendeur', 'email', 'Sexe')  # Ajout des champs email et gender
-    search_fields = ('store_name', 'email')
+    list_display = ('nom_du_vendeur', 'email')
+    search_fields = ('nom_du_vendeur', 'email')
 
 @admin.register(Sale)
 class SaleAdmin(admin.ModelAdmin):

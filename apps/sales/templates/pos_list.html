@@ -21,8 +21,12 @@
                 <td>{{ pos.id }}</td>
                 <td>{{ pos.nom }}</td>
                 <td>{{ pos.get_status_display }}</td>
-                <td>
+                <td class="d-flex gap-2">
                     <a href="{% url 'add_pos' %}?id={{ pos.id }}" class="btn btn-warning btn-sm">Modifier</a>
+                    <form method="post" action="{% url 'delete_pos' pos.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Voulez-vous vraiment supprimer ce terminal ?');">Supprimer</button>
+                    </form>
                 </td>
             </tr>
             {% empty %}

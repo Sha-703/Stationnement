@@ -4,7 +4,7 @@ from django.db.models import Sum, Count, Q, F
 from django.utils.timezone import now
 from django.db import models
 from django.db.models.functions import TruncDay, TruncMonth, TruncYear
-from apps.sales.models import Sale, Produit, Vendeur, POS
+from apps.sales.models import Sale, Produit, Vendeur, POS  # Ajout de POS à l'import
 from .models import Dashboard
 from rest_framework.decorators import api_view
 from .serializers import DashboardSerializer
@@ -13,6 +13,7 @@ import csv
 import datetime
 from django.views.generic import TemplateView
 import json
+from itertools import chain
 
 @api_view(['GET'])
 def dashboard_overview(request):
@@ -73,6 +74,18 @@ def dashboard_view(request):
     # Récupérer le filtre
     filter_type = request.GET.get('filter', 'monthly')
     sales = Sale.objects.select_related('produit', 'seller').all()
+    ventes = Sale.objects.select_related('produit', 'seller').all()  # Remplace Vente par Sale
+
+    # Fusionner les ventes des deux apps
+    all_sales = sales.union(ventes)
+
+    # Pour le graphique, on ne prend que les ventes de Sale (pour compatibilité existante)
+    # Mais pour les totaux, on additionne tout
+    total_sales = sum([getattr(s, 'price', getattr(s, 'prix_total', 0)) for s in all_sales])
+    total_products = Produit.objects.count()
+    total_sellers = Vendeur.objects.count()
+    total_transactions = len(all_sales)
+    total_pos = POS.objects.count()
 
     # Filtrer les ventes pour le graphique selon le filtre sélectionné
     if filter_type == 'daily':
@@ -124,7 +137,7 @@ def dashboard_view(request):
     }
 
     context = {
-        'sales': sales,
+        'sales': all_sales,
         'total_sales': total_sales,
         'total_products': total_products,
         'total_sellers': total_sellers,

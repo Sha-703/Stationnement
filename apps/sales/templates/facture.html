@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Facture</title>
+    <link rel="stylesheet" href="/static/sales/pos.css">
+    <script>
+        function imprimerFacture() {
+            window.print();
+            setTimeout(function() {
+                window.location.href = "{% url 'effectuer_vente' %}";
+            }, 500);
+        }
+    </script>
+</head>
+<body>
+    <div class="facture-box">
+        <h2>Facture N° {{ facture.invoice_number }}</h2>
+        <p>Date d'émission : {{ facture.issued_at }}</p>
+        <hr>
+        <div style="text-align:center; margin-bottom:10px;">
+            {% if qr_code_base64 %}
+                <img src="data:image/png;base64,{{ qr_code_base64 }}" alt="QR Code" style="width:80px; height:80px;" />
+                <p style="font-size:9px;">Scannez pour valider la facture</p>
+            {% endif %}
+        </div>
+        <h3>Détails de la vente</h3>
+        <ul>
+            <li>Produit : {{ vente.produit.nom_produit }}</li>
+            <li>Vendeur : {{ vente.seller.nom_du_vendeur }}</li>
+            <li>Description : {{ vente.description }}</li>
+            <li>Numéro matricule : {{ vente.license_plate }}</li>
+            <li>Prix total : {{ vente.price }} Fc</li>
+            <li>Date de vente : {{ vente.created_at }}</li>
+        </ul>
+        <button class="print-btn" onclick="imprimerFacture()">Imprimer la facture</button>
+    </div>
+</body>
+</html>

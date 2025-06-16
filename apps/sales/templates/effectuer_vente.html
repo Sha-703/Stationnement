@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nouvelle vente</title>
+    <link rel="stylesheet" href="/static/sales/pos.css">
+    <style>
+        body { background: #f7f7f7; }
+        .form-box {
+            max-width: 420px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+            padding: 32px 28px 24px 28px;
+        }
+        h2 {
+            text-align: center;
+            color: #2563eb;
+            margin-bottom: 18px;
+        }
+        .vendeur-info {
+            background: #f1f5fa;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 18px;
+            font-size: 15px;
+            color: #333;
+            box-shadow: 0 1px 4px rgba(37,99,235,0.04);
+        }
+        label {
+            font-weight: 600;
+            margin-top: 10px;
+            color: #222;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            margin-bottom: 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 15px;
+            background: #f9fafb;
+            transition: border 0.2s;
+        }
+        input:focus, select:focus, textarea:focus {
+            border: 1.5px solid #2563eb;
+            outline: none;
+            background: #fff;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(90deg,#2563eb 60%,#60a5fa 100%);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: linear-gradient(90deg,#1d4ed8 60%,#2563eb 100%);
+        }
+        @media (max-width: 600px) {
+            .form-box { padding: 18px 6px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-box">
+        <h2>Nouvelle vente</h2>
+        <div class="vendeur-info">
+            <strong>Vendeur :</strong> {{ vendeur.nom_du_vendeur }}<br>
+            <strong>Email :</strong> {{ vendeur.email }}
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form.visible_fields %}
+                <div>
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                    {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn">Valider la vente</button>
+        </form>
+    </div>
+</body>
+</html>

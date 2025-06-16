@@ -18,7 +18,7 @@ class SaleForm(forms.ModelForm):
 class VendeurForm(forms.ModelForm):
     class Meta:
         model = Vendeur
-        fields = ['nom_du_vendeur', 'email', 'Sexe']
+        fields = ['nom_du_vendeur', 'email']
 
 class ProduitForm(forms.ModelForm):
     class Meta:

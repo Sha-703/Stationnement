@@ -9,9 +9,16 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
-from .models import Produit, Sale, Vendeur, POS  # Importez votre modèle Vendeur
+from .models import Produit, Sale, Vendeur, POS, Invoice  # Ajout de Invoice à l'import
 from .serializers import ProductSerializer, SaleSerializer, InvoiceSerializer, POSSerializer
 from .forms import VendeurForm, ProduitForm, POSForm
+from .vente_form import VenteForm
+import qrcode
+import base64
+from io import BytesIO
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from django import forms
 
 User = get_user_model()
 
@@ -192,3 +199,78 @@ def produit_delete_view(request, pk):
 def pos_list_view(request):
     pos_list = POS.objects.all()
     return render(request, 'pos_list.html', {'pos_list': pos_list})
+
+class VendeurIdentificationForm(forms.Form):
+    nom_du_vendeur = forms.CharField(label="Nom du vendeur", max_length=100)
+    email = forms.EmailField(label="Email", max_length=255)
+
+def identification_vendeur(request):
+    message = None
+    if request.method == 'POST':
+        form = VendeurIdentificationForm(request.POST)
+        if form.is_valid():
+            nom = form.cleaned_data['nom_du_vendeur']
+            email = form.cleaned_data['email']
+            try:
+                vendeur = Vendeur.objects.get(nom_du_vendeur=nom, email=email)
+                request.session['vendeur_id'] = vendeur.id
+                return redirect('effectuer_vente')
+            except Vendeur.DoesNotExist:
+                message = "Aucun vendeur trouvé avec ce nom et cet email. Veuillez réessayer."
+        else:
+            message = "Veuillez remplir correctement le formulaire."
+    else:
+        form = VendeurIdentificationForm()
+    return render(request, 'identification_vendeur.html', {'form': form, 'message': message})
+
+def effectuer_vente(request):
+    vendeur_id = request.session.get('vendeur_id')
+    if not vendeur_id:
+        return redirect('identification_vendeur')
+    vendeur = Vendeur.objects.get(id=vendeur_id)
+    pos = POS.objects.first()
+    if request.method == 'POST':
+        form = VenteForm(request.POST)
+        if form.is_valid():
+            produit = form.cleaned_data['produit']
+            description = form.cleaned_data['description']
+            license_plate = form.cleaned_data['license_plate']
+            price = produit.prix
+            sale = Sale.objects.create(
+                produit=produit,
+                seller=vendeur,
+                description=description,
+                license_plate=license_plate,
+                price=price,
+                source='POS'
+            )
+            numero_facture = f"FCT-{sale.id}-{sale.created_at.strftime('%Y%m%d%H%M%S')}"
+            facture = Invoice.objects.create(sale=sale, invoice_number=numero_facture)
+            return redirect('voir_facture', pk=facture.pk)
+    else:
+        form = VenteForm()
+    return render(request, 'effectuer_vente.html', {'form': form, 'vendeur': vendeur, 'pos': pos})
+
+def voir_facture(request, pk):
+    facture = Invoice.objects.get(pk=pk)
+    sale = facture.sale
+    qr = qrcode.QRCode(box_size=3, border=2)
+    qr.add_data(f"Facture N° {facture.invoice_number}")
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    qr_code_base64 = base64.b64encode(buffer.getvalue()).decode()
+    html = render_to_string('facture.html', {
+        'facture': facture,
+        'vente': sale,
+        'qr_code_base64': qr_code_base64
+    })
+    return HttpResponse(html)
+
+def pos_delete_view(request, pk):
+    pos = get_object_or_404(POS, pk=pk)
+    if request.method == 'POST':
+        pos.delete()
+        return redirect('pos_list')
+    return render(request, 'pos_confirm_delete.html', {'pos': pos})

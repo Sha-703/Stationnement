@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Identification du vendeur</title>
+    <link rel="stylesheet" href="/static/sales/pos.css">
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .form-box { max-width: 350px; margin: 40px auto; border: 1px solid #eee; padding: 20px; border-radius: 8px; }
+        h2 { text-align: center; }
+        label { display: block; margin-top: 10px; }
+        input[type="text"], input[type="email"] { width: 100%; padding: 8px; margin-top: 5px; }
+        button { margin-top: 15px; width: 100%; padding: 10px; background: #007bff; color: #fff; border: none; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="form-box">
+        <h2>Identification du vendeur</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">S'identifier</button>
+        </form>
+    </div>
+</body>
+</html>

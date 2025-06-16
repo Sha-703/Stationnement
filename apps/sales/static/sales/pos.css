@@ -1,0 +1,63 @@
+/* POS/vente rapide - style moderne pour formulaire et facture */
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f7f7f7;
+    margin: 0;
+    padding: 0;
+}
+.form-box, .facture-box {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    padding: 24px 20px 20px 20px;
+    margin: 40px auto;
+    max-width: 400px;
+}
+h2 {
+    text-align: center;
+    color: #007bff;
+    margin-bottom: 18px;
+}
+label {
+    font-weight: 500;
+    margin-top: 10px;
+}
+input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    margin-bottom: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+    font-size: 15px;
+    background: #f9f9f9;
+}
+button, .print-btn {
+    width: 100%;
+    padding: 12px;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.2s;
+}
+button:hover, .print-btn:hover {
+    background: #0056b3;
+}
+.print-btn {
+    margin-top: 18px;
+}
+.facture-box {
+    max-width: 58mm;
+    width: 58mm;
+    font-size: 13px;
+    border: 1px solid #eee;
+}
+@media print {
+    body, .facture-box { width: 58mm; max-width: 58mm; }
+    .print-btn { display: none; }
+}
