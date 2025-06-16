@@ -7,3 +7,5 @@ pytest==7.2.2
 pytest-django==4.5.2
 gunicorn
 whitenoise
+qrcode
+pillow
