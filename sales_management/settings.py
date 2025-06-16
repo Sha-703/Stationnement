@@ -132,3 +132,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 #     "https://stationnement.onrender.com/",
 #     "file://",
 # ]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://stationnement.onrender.com',
+]
