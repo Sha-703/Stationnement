@@ -48,7 +48,7 @@ async function submitVente(event) {
   const license_plate = document.getElementById('license_plate').value;
   const vendeur_id = localStorage.getItem('vendeur_id');
   try {
-    const resp = await fetch(`${API_BASE}/api/vente/creer/`, {
+    const resp = await fetch(`${API_BASE}/api/sales/create/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

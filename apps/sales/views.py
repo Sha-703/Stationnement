@@ -99,7 +99,20 @@ class InvoiceDetailView(APIView):
         try:
             sale = Sale.objects.get(id=sale_id)
             serializer = InvoiceSerializer(sale)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            # Génération du QR code
+            import qrcode
+            import base64
+            from io import BytesIO
+            qr = qrcode.QRCode(box_size=3, border=2)
+            qr.add_data(f"Facture N° {sale.id} | {sale.license_plate}")
+            qr.make(fit=True)
+            img = qr.make_image(fill_color="black", back_color="white")
+            buffer = BytesIO()
+            img.save(buffer, format="PNG")
+            qr_code_base64 = base64.b64encode(buffer.getvalue()).decode()
+            data = serializer.data
+            data['qr_code_base64'] = qr_code_base64
+            return Response(data, status=status.HTTP_200_OK)
         except Sale.DoesNotExist:
             return Response({"error": "Vente introuvable"}, status=status.HTTP_404_NOT_FOUND)
 
