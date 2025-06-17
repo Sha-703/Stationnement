@@ -16,7 +16,7 @@ from .vente_form import VenteForm
 import qrcode
 import base64
 from io import BytesIO
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django import forms
 from django.views.decorators.csrf import csrf_exempt
@@ -207,6 +207,18 @@ class VendeurIdentificationForm(forms.Form):
 
 @csrf_exempt
 def identification_vendeur(request):
+    # Si la requête vient de l'app mobile (JSON)
+    if request.method == 'POST' and request.headers.get('Content-Type') == 'application/json':
+        import json
+        data = json.loads(request.body)
+        nom = data.get('nom_du_vendeur')
+        email = data.get('email')
+        try:
+            vendeur = Vendeur.objects.get(nom_du_vendeur=nom, email=email)
+            return JsonResponse({'vendeur_id': vendeur.id, 'message': 'ok'})
+        except Vendeur.DoesNotExist:
+            return JsonResponse({'error': 'Nom ou email invalide'}, status=401)
+    # Sinon, comportement classique (formulaire HTML)
     message = None
     if request.method == 'POST':
         form = VendeurIdentificationForm(request.POST)
