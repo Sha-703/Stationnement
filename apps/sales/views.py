@@ -237,6 +237,7 @@ def identification_vendeur(request):
         form = VendeurIdentificationForm()
     return render(request, 'identification_vendeur.html', {'form': form, 'message': message})
 
+@csrf_exempt
 def effectuer_vente(request):
     vendeur_id = request.session.get('vendeur_id')
     if not vendeur_id:
