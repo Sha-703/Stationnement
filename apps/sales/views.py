@@ -112,6 +112,8 @@ class InvoiceDetailView(APIView):
             qr_code_base64 = base64.b64encode(buffer.getvalue()).decode()
             data = serializer.data
             data['qr_code_base64'] = qr_code_base64
+            # Ajout du mail vendeur
+            data['vendeur_email'] = sale.seller.email
             return Response(data, status=status.HTTP_200_OK)
         except Sale.DoesNotExist:
             return Response({"error": "Vente introuvable"}, status=status.HTTP_404_NOT_FOUND)

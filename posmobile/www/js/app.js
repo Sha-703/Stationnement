@@ -111,20 +111,23 @@ function renderFacture(data) {
   const box = document.getElementById('facture-box');
   if (!box) return;
   let html = `<div class='facture-box' style='max-width:400px;margin:30px auto;background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.07);padding:24px;'>`;
-  html += `<h2 style='text-align:center;color:#2563eb;'>Facture</h2>`;
-  html += `<hr>`;
+  html += `<h2 style='text-align:center;color:#2563eb;margin-bottom:8px;'>Facture</h2>`;
+  html += `<hr style='margin-bottom:16px;'>`;
   if (data.qr_code_base64) {
     html += `<div style='text-align:center;margin-bottom:10px;'><img src='data:image/png;base64,${data.qr_code_base64}' alt='QR Code' style='width:80px;height:80px;'/><p style='font-size:9px;'>Scannez pour valider la facture</p></div>`;
   }
-  html += `<h3 style='margin-top:18px;'>Détails de la vente</h3>`;
-  html += `<ul style='list-style:none;padding:0;'>`;
-  html += `<li><strong>Produit :</strong> ${data.produit_nom}</li>`;
-  html += `<li><strong>Vendeur :</strong> ${data.vendeur_nom}</li>`;
-  html += `<li><strong>Description :</strong> ${data.description || ''}</li>`;
-  html += `<li><strong>Numéro matricule :</strong> ${data.license_plate || ''}</li>`;
-  html += `<li><strong>Prix total :</strong> ${data.price} Fc</li>`;
-  html += `<li><strong>Date de vente :</strong> ${data.created_at}</li>`;
-  html += `</ul>`;
+  html += `<div style='margin-bottom:12px;'>`;
+  html += `<strong>Vendeur :</strong> <span style='color:#222;'>${data.vendeur_nom}</span><br>`;
+  html += `<strong>Email :</strong> <span style='color:#222;'>${data.vendeur_email || ''}</span>`;
+  html += `</div>`;
+  html += `<h3 style='margin-top:10px;margin-bottom:8px;font-size:1.1em;color:#2563eb;'>Détails de la vente</h3>`;
+  html += `<table style='width:100%;font-size:14px;margin-bottom:10px;'>`;
+  html += `<tr><td><strong>Produit</strong></td><td>${data.produit_nom}</td></tr>`;
+  html += `<tr><td><strong>Description</strong></td><td>${data.description || ''}</td></tr>`;
+  html += `<tr><td><strong>Numéro matricule</strong></td><td>${data.license_plate || ''}</td></tr>`;
+  html += `<tr><td><strong>Prix total</strong></td><td>${data.price} Fc</td></tr>`;
+  html += `<tr><td><strong>Date</strong></td><td>${data.created_at}</td></tr>`;
+  html += `</table>`;
   html += `</div>`;
   box.innerHTML = html;
 }
