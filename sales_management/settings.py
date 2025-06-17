@@ -135,4 +135,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = [
     'https://stationnement.onrender.com',
+    'https://localhost',
+    'https://127.0.0.1',
 ]

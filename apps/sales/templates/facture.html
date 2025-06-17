@@ -10,10 +10,19 @@
                 window.location.href = "{% url 'effectuer_vente' %}";
             }, 500);
         }
+
+        function imprimerTicket() {
+            var content = document.getElementById('factureDetails').innerHTML;
+            if (window.cordova && cordova.plugins && cordova.plugins.printer) {
+                cordova.plugins.printer.print('<html><body>' + content + '</body></html>', { name: 'Facture' });
+            } else {
+                alert('Impression non disponible sur ce périphérique.');
+            }
+        }
     </script>
 </head>
 <body>
-    <div class="facture-box">
+    <div class="facture-box" id="factureDetails">
         <h2>Facture N° {{ facture.invoice_number }}</h2>
         <p>Date d'émission : {{ facture.issued_at }}</p>
         <hr>
@@ -33,6 +42,7 @@
             <li>Date de vente : {{ vente.created_at }}</li>
         </ul>
         <button class="print-btn" onclick="imprimerFacture()">Imprimer la facture</button>
+        <button class="print-btn" onclick="imprimerTicket()">Imprimer le ticket</button>
     </div>
 </body>
 </html>
