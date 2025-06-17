@@ -20,7 +20,7 @@ async function loginVendeur(event) {
   const nom = document.getElementById('nom').value;
   const email = document.getElementById('email').value;
   try {
-    const resp = await fetch(`${API_BASE}/api/vendeur/login/`, {
+    const resp = await fetch(`${API_BASE}/api/api/vendeur/login/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nom_du_vendeur: nom, email: email })
