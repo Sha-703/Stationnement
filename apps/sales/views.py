@@ -288,3 +288,13 @@ def pos_delete_view(request, pk):
         pos.delete()
         return redirect('pos_list')
     return render(request, 'pos_confirm_delete.html', {'pos': pos})
+
+class VendeurLoginAPIView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        nom_du_vendeur = request.data.get('nom_du_vendeur')
+        try:
+            vendeur = Vendeur.objects.get(email=email, nom_du_vendeur=nom_du_vendeur)
+            return Response({'vendeur_id': vendeur.id, 'message': 'ok'}, status=status.HTTP_200_OK)
+        except Vendeur.DoesNotExist:
+            return Response({'error': 'Nom ou email invalide'}, status=status.HTTP_401_UNAUTHORIZED)

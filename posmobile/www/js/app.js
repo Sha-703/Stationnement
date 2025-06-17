@@ -20,12 +20,15 @@ async function loginVendeur(event) {
   const nom = document.getElementById('nom').value;
   const email = document.getElementById('email').value;
   try {
-    const resp = await fetch(`${API_BASE}/api/vente/identification/`, {
+    const resp = await fetch(`${API_BASE}/api/vendeur/login/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nom_du_vendeur: nom, email: email })
     });
-    if (!resp.ok) throw new Error('Nom ou email invalide');
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error || 'Nom ou email invalide');
+    }
     const data = await resp.json();
     localStorage.setItem('vendeur_id', data.vendeur_id);
     localStorage.setItem('vendeur_nom', nom);

@@ -6,7 +6,7 @@ from .views import (
     produit_list_view, produit_create_view, produit_update_view, produit_delete_view,
     POSViewSet, POSCreateView, update_pos_status, pos_list_view,
     identification_vendeur, effectuer_vente, voir_facture,
-    pos_delete_view
+    pos_delete_view, VendeurLoginAPIView
 )
 
 router = DefaultRouter()
@@ -42,6 +42,8 @@ urlpatterns = [
     path('vente/identification/', identification_vendeur, name='identification_vendeur'),
     path('vente/creer/', effectuer_vente, name='effectuer_vente'),
     path('vente/facture/<int:pk>/', voir_facture, name='voir_facture'),
+
+    path('api/vendeur/login/', VendeurLoginAPIView.as_view(), name='vendeur_login_api'),
 
     path('', include(router.urls)),
 ]
