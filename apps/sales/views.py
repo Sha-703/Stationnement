@@ -19,6 +19,7 @@ from io import BytesIO
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django import forms
+from django.views.decorators.csrf import csrf_exempt
 
 User = get_user_model()
 
@@ -204,6 +205,7 @@ class VendeurIdentificationForm(forms.Form):
     nom_du_vendeur = forms.CharField(label="Nom du vendeur", max_length=100)
     email = forms.EmailField(label="Email", max_length=255)
 
+@csrf_exempt
 def identification_vendeur(request):
     message = None
     if request.method == 'POST':
