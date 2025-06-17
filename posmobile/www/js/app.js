@@ -44,7 +44,6 @@ async function submitVente(event) {
   event.preventDefault();
   clearError();
   const produit = document.getElementById('produit').value;
-  const quantite = document.getElementById('quantite').value;
   const description = document.getElementById('description').value;
   const license_plate = document.getElementById('license_plate').value;
   const vendeur_id = localStorage.getItem('vendeur_id');
@@ -57,17 +56,35 @@ async function submitVente(event) {
       body: JSON.stringify({
         produit_id: produit,
         vendeur_id: vendeur_id,
-        quantite: quantite,
         description: description,
         license_plate: license_plate
       })
     });
-    if (!resp.ok) throw new Error('Vente impossible');
+    if (!resp.ok) {
+      let errMsg = 'Vente impossible';
+      try {
+        // On clone la réponse pour pouvoir lire le flux deux fois
+        const err = await resp.clone().json();
+        errMsg = err.error || JSON.stringify(err) || errMsg;
+        console.error('Erreur API vente:', err);
+      } catch (parseErr) {
+        try {
+          const errText = await resp.text();
+          errMsg = errText || errMsg;
+          console.error('Erreur API vente (texte):', errText);
+        } catch (e2) {
+          // ignore
+        }
+      }
+      showError(errMsg);
+      return;
+    }
     const data = await resp.json();
     localStorage.setItem('facture_id', data.sale_id || data.facture_id);
     window.location = 'facture.html';
   } catch (e) {
     showError(e.message || 'Erreur lors de la vente');
+    console.error('Exception JS vente:', e);
   }
 }
 
@@ -75,15 +92,13 @@ async function submitVente(event) {
 async function loadFacture() {
   clearError();
   const factureId = localStorage.getItem('facture_id');
-  const token = localStorage.getItem('token');
   if (!factureId) {
     showError('Aucune facture à afficher.');
     return;
   }
   try {
-    const resp = await fetch(`${API_BASE}/api/vente/facture/${factureId}/`, {
-      headers: { 'Authorization': `Token ${token}` }
-    });
+    // Correction de l'URL pour correspondre à l'API REST
+    const resp = await fetch(`${API_BASE}/api/sales/${factureId}/invoice/`);
     if (!resp.ok) throw new Error('Facture introuvable');
     const data = await resp.json();
     renderFacture(data);
@@ -95,15 +110,22 @@ async function loadFacture() {
 function renderFacture(data) {
   const box = document.getElementById('facture-box');
   if (!box) return;
-  let html = `<h2>Facture #${data.numero}</h2>`;
-  html += `<div>Date : ${data.date}</div>`;
-  html += `<div>Client : ${data.client || 'N/A'}</div>`;
-  html += `<table><thead><tr><th>Produit</th><th>Qté</th><th>Prix</th></tr></thead><tbody>`;
-  data.lignes.forEach(l => {
-    html += `<tr><td>${l.produit}</td><td>${l.quantite}</td><td>${l.prix} F</td></tr>`;
-  });
-  html += `</tbody></table>`;
-  html += `<div class='facture-total'>Total : ${data.total} F</div>`;
+  let html = `<div class='facture-box' style='max-width:400px;margin:30px auto;background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.07);padding:24px;'>`;
+  html += `<h2 style='text-align:center;color:#2563eb;'>Facture</h2>`;
+  html += `<hr>`;
+  if (data.qr_code_base64) {
+    html += `<div style='text-align:center;margin-bottom:10px;'><img src='data:image/png;base64,${data.qr_code_base64}' alt='QR Code' style='width:80px;height:80px;'/><p style='font-size:9px;'>Scannez pour valider la facture</p></div>`;
+  }
+  html += `<h3 style='margin-top:18px;'>Détails de la vente</h3>`;
+  html += `<ul style='list-style:none;padding:0;'>`;
+  html += `<li><strong>Produit :</strong> ${data.produit_nom}</li>`;
+  html += `<li><strong>Vendeur :</strong> ${data.vendeur_nom}</li>`;
+  html += `<li><strong>Description :</strong> ${data.description || ''}</li>`;
+  html += `<li><strong>Numéro matricule :</strong> ${data.license_plate || ''}</li>`;
+  html += `<li><strong>Prix total :</strong> ${data.price} Fc</li>`;
+  html += `<li><strong>Date de vente :</strong> ${data.created_at}</li>`;
+  html += `</ul>`;
+  html += `</div>`;
   box.innerHTML = html;
 }
 
@@ -125,7 +147,7 @@ function imprimerFacture() {
 
 // Navigation sécurisée
 function checkAuth(redirect = 'index.html') {
-  if (!localStorage.getItem('token')) {
+  if (!localStorage.getItem('vendeur_id')) {
     window.location = redirect;
   }
 }

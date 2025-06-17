@@ -137,4 +137,5 @@ CSRF_TRUSTED_ORIGINS = [
     'https://stationnement.onrender.com',
     'https://localhost',
     'https://127.0.0.1',
+    'https://preview-*.monaca.mobi',  # Autorise toutes les previews Monaca
 ]

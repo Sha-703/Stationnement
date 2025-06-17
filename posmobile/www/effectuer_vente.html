@@ -12,10 +12,11 @@
         <div class="vendeur-info" id="vendeur-info"></div>
         <div id="error-msg" class="error" style="display:none;"></div>
         <form onsubmit="submitVente(event)">
-            <label for="produit">Produit (ID ou nom)</label>
-            <input type="text" id="produit" required>
-            <label for="quantite">Quantité</label>
-            <input type="number" id="quantite" min="1" required>
+            <label for="produit">Produit</label>
+            <select id="produit" required onchange="updatePrixProduit()">
+              <option value="">Sélectionner un produit</option>
+            </select>
+            <div id="prix-produit" style="margin-bottom:10px;color:#2563eb;font-weight:bold;"></div>
             <label for="description">Description</label>
             <input type="text" id="description" placeholder="Description de la vente">
             <label for="license_plate">Numéro de plaque</label>
@@ -30,6 +31,32 @@
       const email = localStorage.getItem('vendeur_email') || '';
       if(nom && email) {
         document.getElementById('vendeur-info').innerHTML = '<strong>Vendeur :</strong> ' + nom + '<br><strong>Email :</strong> ' + email;
+      }
+
+      // Charger la liste des produits et remplir le select
+      let produitsList = [];
+      fetch('https://stationnement.onrender.com/api/products/')
+        .then(r => r.json())
+        .then(data => {
+          produitsList = data;
+          const select = document.getElementById('produit');
+          data.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.nom_produit + ' (' + p.prix + ' F)';
+            select.appendChild(opt);
+          });
+        });
+
+      function updatePrixProduit() {
+        const select = document.getElementById('produit');
+        const prixDiv = document.getElementById('prix-produit');
+        const produit = produitsList.find(p => p.id == select.value);
+        if (produit) {
+          prixDiv.textContent = 'Prix : ' + produit.prix + ' F';
+        } else {
+          prixDiv.textContent = '';
+        }
       }
     </script>
 </body>
