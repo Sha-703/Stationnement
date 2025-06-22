@@ -5,10 +5,10 @@ from .views import (
     vendeur_list_view, vendeur_create_view, vendeur_update_view, vendeur_delete_view,
     produit_list_view, produit_create_view, produit_update_view, produit_delete_view,
     POSViewSet, POSCreateView, update_pos_status, pos_list_view,
-    identification_vendeur, effectuer_vente, voir_facture,
+    identification_vendeur, effectuer_vente, voir_facture, previsualiser_facture, enregistrer_vente_apres_impression,
     pos_delete_view, VendeurLoginAPIView,
     rapport_vente_vendeur, accueil_vendeur, historique_vente, logout_vendeur, historique_vendeur,
-    rapport_vente_vendeur_print, login_view
+    rapport_vente_vendeur_print, login_view, enregistrer_vente_apres_impression
 )
 
 router = DefaultRouter()
@@ -44,6 +44,8 @@ urlpatterns = [
     path('vente/identification/', identification_vendeur, name='identification_vendeur'),
     path('vente/creer/', effectuer_vente, name='effectuer_vente'),
     path('vente/facture/<int:pk>/', voir_facture, name='voir_facture'),
+    path('vente/previsualiser-facture/', previsualiser_facture, name='previsualiser_facture'),
+    path('vente/enregistrer-apres-impression/', enregistrer_vente_apres_impression, name='enregistrer_vente_apres_impression'),
 
     path('api/vendeur/login/', VendeurLoginAPIView.as_view(), name='vendeur_login_api'),
 

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Facture</title>
+    <link rel="stylesheet" href="/static/sales/pos.css">
+    <script>
+        function imprimerEtEnregistrer() {
+            window.print();
+            fetch("{% url 'enregistrer_vente_apres_impression' %}", {
+                method: "POST",
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    window.location.href = "{% url 'accueil_vendeur' %}";
+                } else {
+                    alert("Erreur lors de l'enregistrement de la vente : " + (data.error || ''));
+                }
+            });
+        }
+    </script>
+    <style>
+        .filigramme {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-25deg);
+            font-size: 5rem;
+            color: rgba(0,0,0,0.07);
+            z-index: 0;
+            pointer-events: none;
+            user-select: none;
+            font-weight: bold;
+            letter-spacing: 0.2em;
+        }
+        .facture-content {
+            position: relative;
+            background: #fff;
+            padding: 2rem 2.5rem;
+            max-width: 600px;
+            margin: 2rem auto;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+            border-radius: 16px;
+            min-height: 60vh;
+        }
+        .facture-table th {
+            width: 40%;
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        .facture-table td {
+            background: #fff;
+        }
+        @media print {
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="facture-content">
+        <div class="filigramme">KONGO DIA BETO</div>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">Facture</h2>
+            {% if qr_code_base64 %}
+                <img src="data:image/png;base64,{{ qr_code_base64 }}" alt="QR Code" style="height:70px;">
+            {% endif %}
+        </div>
+        <hr>
+        <table class="table facture-table mb-4">
+            <tr><th>Numéro</th><td>{{ numero_previsionnel }}</td></tr>
+            <tr><th>Date</th><td>{{ now|date:'d/m/Y H:i' }}</td></tr>
+            <tr><th>Vendeur</th><td>{{ vendeur.nom_du_vendeur }}</td></tr>
+            <tr><th>Produit</th><td>{{ produit.nom_produit }}</td></tr>
+            <tr><th>Immatriculation</th><td>{{ license_plate }}</td></tr>
+            <tr><th>Prix</th><td><strong>{{ prix }} Fc</strong></td></tr>
+            <tr><th>Description</th><td>{{ description }}</td></tr>
+        </table>
+        <div class="text-center mt-4 no-print">
+            <button class="btn btn-secondary ms-2" onclick="imprimerEtEnregistrer()">Imprimer la facture</button>
+        </div>
+    </div>
+</body>
+</html>

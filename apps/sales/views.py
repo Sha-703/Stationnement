@@ -24,7 +24,8 @@ from django.contrib.auth import logout
 from django.utils import timezone
 from datetime import timedelta
 from django.template import RequestContext
-from django.db.models import Sum
+from django.db.models import Sum, Max
+from django.views.decorators.http import require_POST
 
 User = get_user_model()
 
@@ -267,24 +268,69 @@ def effectuer_vente(request):
     if request.method == 'POST':
         form = VenteForm(request.POST)
         if form.is_valid():
-            produit = form.cleaned_data['produit']
-            description = form.cleaned_data['description']
-            license_plate = form.cleaned_data['license_plate']
-            price = produit.prix
-            sale = Sale.objects.create(
-                produit=produit,
-                seller=vendeur,
-                description=description,
-                license_plate=license_plate,
-                price=price,
-                source='POS'
-            )
-            numero_facture = f"FCT-{sale.id}-{sale.created_at.strftime('%Y%m%d%H%M%S')}"
-            facture = Invoice.objects.create(sale=sale, invoice_number=numero_facture)
-            return redirect('voir_facture', pk=facture.pk)
+            # Stocker les infos de la vente en session
+            request.session['vente_temp'] = {
+                'produit_id': form.cleaned_data['produit'].id,
+                'description': form.cleaned_data['description'],
+                'license_plate': form.cleaned_data['license_plate'],
+            }
+            return redirect('previsualiser_facture')
     else:
         form = VenteForm()
     return render(request, 'effectuer_vente.html', {'form': form, 'vendeur': vendeur, 'pos': pos})
+
+# Nouvelle vue : prévisualisation de la facture (avant enregistrement)
+def previsualiser_facture(request):
+    vente_temp = request.session.get('vente_temp')
+    vendeur_id = request.session.get('vendeur_id')
+    if not vente_temp or not vendeur_id:
+        return redirect('effectuer_vente')
+    vendeur = Vendeur.objects.get(id=vendeur_id)
+    produit = Produit.objects.get(id=vente_temp['produit_id'])
+    # Numéro prévisionnel de facture
+    last_id = Sale.objects.aggregate(max_id=Max('id'))['max_id'] or 0
+    numero_previsionnel = last_id + 1
+    qr = qrcode.QRCode(box_size=3, border=2)
+    qr_data = f"Facture prévisionnelle N° {numero_previsionnel}\nDate: {timezone.localtime(timezone.now()).strftime('%d/%m/%Y %H:%M')}\nVendeur: {vendeur.nom_du_vendeur}\nProduit: {produit.nom_produit}\nImmatriculation: {vente_temp['license_plate']}\nPrix: {produit.prix} Fc\nDescription: {vente_temp['description']}"
+    qr.add_data(qr_data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    qr_code_base64 = base64.b64encode(buffer.getvalue()).decode()
+    context = {
+        'produit': produit,
+        'vendeur': vendeur,
+        'license_plate': vente_temp['license_plate'],
+        'description': vente_temp['description'],
+        'qr_code_base64': qr_code_base64,
+        'prix': produit.prix,
+        'now': timezone.localtime(timezone.now()),
+        'numero_previsionnel': numero_previsionnel,
+    }
+    return render(request, 'facture_previsualisation.html', context)
+
+@require_POST
+@csrf_exempt
+def enregistrer_vente_apres_impression(request):
+    vente_temp = request.session.get('vente_temp')
+    vendeur_id = request.session.get('vendeur_id')
+    if not vente_temp or not vendeur_id:
+        return JsonResponse({'success': False, 'error': 'Session expirée'}, status=400)
+    vendeur = Vendeur.objects.get(id=vendeur_id)
+    produit = Produit.objects.get(id=vente_temp['produit_id'])
+    sale = Sale.objects.create(
+        produit=produit,
+        seller=vendeur,
+        description=vente_temp['description'],
+        license_plate=vente_temp['license_plate'],
+        price=produit.prix,
+        source='POS'
+    )
+    numero_facture = f"FCT-{sale.id}-{sale.created_at.strftime('%Y%m%d%H%M%S')}"
+    facture = Invoice.objects.create(sale=sale, invoice_number=numero_facture)
+    del request.session['vente_temp']
+    return JsonResponse({'success': True, 'facture_id': facture.pk})
 
 def voir_facture(request, pk):
     facture = Invoice.objects.get(pk=pk)
@@ -293,7 +339,6 @@ def voir_facture(request, pk):
     qr = qrcode.QRCode(box_size=3, border=2)
     qr_data = f"Facture: {facture.invoice_number}\nDate: {sale.created_at.strftime('%d/%m/%Y %H:%M')}\nVendeur: {sale.seller.nom_du_vendeur}\nProduit: {sale.produit.nom_produit}\nImmatriculation: {sale.license_plate}\nPrix: {sale.price} Fc\nDescription: {sale.description}"
     qr.add_data(qr_data)
-    qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
     buffer = BytesIO()
     img.save(buffer, format="PNG")
@@ -353,7 +398,7 @@ def logout_vendeur(request):
     except KeyError:
         pass
     logout(request)
-    return redirect('login')
+    return redirect('identification_vendeur')
 
 def base_context(request):
     return {'vendeur_id': request.session.get('vendeur_id')}
