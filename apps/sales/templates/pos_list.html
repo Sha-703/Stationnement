@@ -11,7 +11,9 @@
             <tr>
                 <th>ID</th>
                 <th>Nom</th>
-                <th>Statut</th>
+                <th>Vendeur assigné</th>
+                <th>Date de création</th>
+                <th>Dernière modification</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -19,8 +21,10 @@
             {% for pos in pos_list %}
             <tr>
                 <td>{{ pos.id }}</td>
-                <td>{{ pos.nom }}</td>
-                <td>{{ pos.get_status_display }}</td>
+                <td>{{ pos.name }}</td>
+                <td>{% if pos.vendeur %}{{ pos.vendeur.nom_du_vendeur }}{% else %}<span class="text-muted">Aucun</span>{% endif %}</td>
+                <td>{{ pos.created_at|date:'d/m/Y H:i' }}</td>
+                <td>{{ pos.updated_at|date:'d/m/Y H:i' }}</td>
                 <td class="d-flex gap-2">
                     <a href="{% url 'add_pos' %}?id={{ pos.id }}" class="btn btn-warning btn-sm">Modifier</a>
                     <form method="post" action="{% url 'delete_pos' pos.id %}" style="display:inline;">
@@ -30,7 +34,7 @@
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="4" class="text-center">Aucun terminal trouvé.</td></tr>
+            <tr><td colspan="6" class="text-center">Aucun terminal trouvé.</td></tr>
             {% endfor %}
         </tbody>
     </table>
