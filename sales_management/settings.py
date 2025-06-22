@@ -23,7 +23,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'unsafe-default-key')
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    'stationnement.onrender.com',
+    'stationnement.onrender.com',  # Remplace par ton vrai domaine Render si besoin
     'localhost',
     '127.0.0.1',
 ]
