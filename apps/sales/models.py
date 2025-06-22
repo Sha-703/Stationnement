@@ -13,6 +13,8 @@ class Produit(models.Model):
     def save(self, *args, **kwargs):
         if self.nom_produit:
             self.nom_produit = self.nom_produit.upper()
+        if self.default_description:
+            self.default_description = self.default_description.upper()
         super().save(*args, **kwargs)
 
 class Vendeur(models.Model):
@@ -21,6 +23,11 @@ class Vendeur(models.Model):
 
     def __str__(self):
         return self.nom_du_vendeur
+
+    def save(self, *args, **kwargs):
+        if self.nom_du_vendeur:
+            self.nom_du_vendeur = self.nom_du_vendeur.upper()
+        super().save(*args, **kwargs)
 
 class Sale(models.Model):
     produit = models.ForeignKey('Produit', on_delete=models.CASCADE)  # Champ correct
@@ -39,6 +46,13 @@ class Sale(models.Model):
     def __str__(self):
         return f"{self.produit} vendu par {self.seller}"
 
+    def save(self, *args, **kwargs):
+        if self.description:
+            self.description = self.description.upper()
+        if self.license_plate:
+            self.license_plate = self.license_plate.upper()
+        super().save(*args, **kwargs)
+
 class Invoice(models.Model):
     sale = models.OneToOneField(Sale, on_delete=models.CASCADE)
     invoice_number = models.CharField(max_length=100, unique=True)
@@ -53,6 +67,10 @@ class POS(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if self.name:
+            self.name = self.name.upper()
+        super().save(*args, **kwargs)

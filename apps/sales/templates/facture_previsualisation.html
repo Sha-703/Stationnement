@@ -95,14 +95,14 @@
         <div class="ticket-content">
             <div class="ticket-title">Facture N° FCT-{{ numero_previsionnel }}</div>
             <div style="text-align:center; font-size:0.98rem; margin-bottom:2px;">
-                Date d'émission : {{ now|date:'F d, Y, g:i a' }}
+                Date d'émission : {{ now|date:'d/m/Y H:i:s' }}
             </div>
             <hr class="ticket-hr">
             <div class="ticket-qr">
                 {% if qr_code_base64 %}
                     <img src="data:image/png;base64,{{ qr_code_base64 }}" alt="QR Code" style="height:110px; width:110px; background:#fff; padding:4px; border-radius:6px; border:1.5px solid #222; margin-bottom:2px;">
                 {% endif %}
-                <div style="font-size:0.85rem; color:#555;">Scannez pour valider la facture</div>
+                <div style="font-size:0.85rem; color:#555;">Scanner pour authentifier la facture</div>
             </div>
             <hr class="ticket-hr">
             <div class="ticket-details">
@@ -114,7 +114,7 @@
             <div class="ticket-details">
                 • Numéro matricule : {{ license_plate }}<br>
                 • Prix total : {{ prix|floatformat:2 }} Fc<br>
-                • Date de vente : {{ now|date:'F d, Y, g:i a' }}
+                • Date de vente : {{ now|date:'d/m/Y H:i:s' }}
             </div>
             <hr class="ticket-hr">
             <div class="ticket-footer">
