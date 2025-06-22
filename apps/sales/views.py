@@ -410,7 +410,8 @@ def historique_vente(request):
     vendeur = Vendeur.objects.get(id=vendeur_id)
     today = timezone.now().date()
     ventes = Sale.objects.filter(seller=vendeur, created_at__date=today)
-    return render(request, 'historique_vente.html', {'vendeur': vendeur, 'ventes': ventes})
+    total_journalier = ventes.aggregate(total=Sum('price'))['total'] or 0
+    return render(request, 'historique_vente.html', {'vendeur': vendeur, 'ventes': ventes, 'total_journalier': total_journalier})
 
 def rapport_vente_vendeur_print(request, vendeur_id=None):
     if vendeur_id:

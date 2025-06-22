@@ -43,6 +43,35 @@
         .facture-table td {
             background: #fff;
         }
+        @media print {
+            body, html {
+                width: 58mm !important;
+                min-width: 58mm !important;
+                max-width: 58mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .facture-content {
+                width: 58mm !important;
+                min-width: 58mm !important;
+                max-width: 58mm !important;
+                margin: 0 !important;
+                padding: 0.5rem 0.5rem !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+            }
+            .table, .table th, .table td {
+                font-size: 11px !important;
+                padding: 2px 4px !important;
+            }
+            .filigramme, .no-print, .btn, .navbar, .alert, .card, .container, .mb-4, .mt-4 {
+                display: none !important;
+            }
+            h2, h1, h3, h4, h5, h6 {
+                font-size: 1rem !important;
+                margin: 0.2rem 0 !important;
+            }
+        }
     </style>
 </head>
 <body>
