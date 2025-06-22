@@ -28,4 +28,4 @@ class ProduitForm(forms.ModelForm):
 class POSForm(forms.ModelForm):
     class Meta:
         model = POS
-        fields = ['name', 'address', 'connection_type']
+        fields = ['name', 'vendeur']

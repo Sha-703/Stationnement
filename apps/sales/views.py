@@ -5,7 +5,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.decorators import api_view
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate, login
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
@@ -20,6 +20,11 @@ from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django import forms
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import logout
+from django.utils import timezone
+from datetime import timedelta
+from django.template import RequestContext
+from django.db.models import Sum
 
 User = get_user_model()
 
@@ -243,7 +248,7 @@ def identification_vendeur(request):
             try:
                 vendeur = Vendeur.objects.get(nom_du_vendeur=nom, email=email)
                 request.session['vendeur_id'] = vendeur.id
-                return redirect('effectuer_vente')
+                return redirect('accueil_vendeur')
             except Vendeur.DoesNotExist:
                 message = "Aucun vendeur trouvé avec ce nom et cet email. Veuillez réessayer."
         else:
@@ -284,8 +289,10 @@ def effectuer_vente(request):
 def voir_facture(request, pk):
     facture = Invoice.objects.get(pk=pk)
     sale = facture.sale
+    # Générer un QR code avec toutes les infos de la vente
     qr = qrcode.QRCode(box_size=3, border=2)
-    qr.add_data(f"Facture N° {facture.invoice_number}")
+    qr_data = f"Facture: {facture.invoice_number}\nDate: {sale.created_at.strftime('%d/%m/%Y %H:%M')}\nVendeur: {sale.seller.nom_du_vendeur}\nProduit: {sale.produit.nom_produit}\nImmatriculation: {sale.license_plate}\nPrix: {sale.price} Fc\nDescription: {sale.description}"
+    qr.add_data(qr_data)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
     buffer = BytesIO()
@@ -314,3 +321,70 @@ class VendeurLoginAPIView(APIView):
             return Response({'vendeur_id': vendeur.id, 'message': 'ok'}, status=status.HTTP_200_OK)
         except Vendeur.DoesNotExist:
             return Response({'error': 'Nom ou email invalide'}, status=status.HTTP_401_UNAUTHORIZED)
+
+def rapport_vente_vendeur(request):
+    vendeurs = Vendeur.objects.all()
+    for v in vendeurs:
+        ventes = Sale.objects.filter(seller=v)
+        v.nb_ventes = ventes.count()
+        v.total_ventes = ventes.aggregate(total=Sum('price'))['total'] or 0
+    return render(request, 'rapport_vente_vendeur.html', {'vendeurs': vendeurs})
+
+
+def accueil_vendeur(request):
+    vendeur_id = request.session.get('vendeur_id')
+    if not vendeur_id:
+        return redirect('identification_vendeur')
+    vendeur = Vendeur.objects.get(id=vendeur_id)
+    return render(request, 'accueil_vendeur.html', {'vendeur': vendeur})
+
+
+def historique_vendeur(request, vendeur_id):
+    vendeur = get_object_or_404(Vendeur, id=vendeur_id)
+    date = request.GET.get('date')
+    ventes = Sale.objects.filter(seller=vendeur)
+    if date:
+        ventes = ventes.filter(created_at__date=date)
+    return render(request, 'historique_vendeur.html', {'vendeur': vendeur, 'ventes': ventes, 'date': date})
+
+def logout_vendeur(request):
+    try:
+        del request.session['vendeur_id']
+    except KeyError:
+        pass
+    logout(request)
+    return redirect('identification_vendeur')
+
+def base_context(request):
+    return {'vendeur_id': request.session.get('vendeur_id')}
+
+def historique_vente(request):
+    vendeur_id = request.session.get('vendeur_id')
+    if not vendeur_id:
+        return redirect('identification_vendeur')
+    vendeur = Vendeur.objects.get(id=vendeur_id)
+    today = timezone.now().date()
+    ventes = Sale.objects.filter(seller=vendeur, created_at__date=today)
+    return render(request, 'historique_vente.html', {'vendeur': vendeur, 'ventes': ventes})
+
+def rapport_vente_vendeur_print(request, vendeur_id=None):
+    if vendeur_id:
+        vendeur = Vendeur.objects.get(id=vendeur_id)
+        ventes = Sale.objects.filter(seller=vendeur).order_by('-created_at')
+    else:
+        vendeur = None
+        ventes = Sale.objects.all().order_by('-created_at')
+    total_ventes = ventes.aggregate(total=Sum('price'))['total'] or 0
+    return render(request, 'rapport_vente_vendeur_print.html', {'ventes': ventes, 'vendeur': vendeur, 'total_ventes': total_ventes})
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('dashboard')
+        else:
+            return render(request, 'login.html', {'form': {}, 'errors': True})
+    return render(request, 'login.html', {'form': {}})

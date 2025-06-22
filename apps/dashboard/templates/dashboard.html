@@ -5,47 +5,84 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h1 class="mb-4">Dashboard</h1>
-    <div class="row text-center">
-        <div class="col-md-3">
-            <div class="card text-white bg-primary mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">Ventes</h5>
-                    <p class="card-text fs-4">{{ total_transactions|intcomma }}</p>
+    <h1 class="mb-4">Tableau de Bord</h1>
+    {% if not request.user.is_authenticated %}
+    <div class="text-end mb-3">
+        <a href="{% url 'login' %}" class="btn btn-dark btn-lg rounded-pill"><i class="bi bi-box-arrow-in-right"></i> Connexion</a>
+    </div>
+    {% endif %}
+    <div class="row g-3 justify-content-center">
+        <div class="col-6 col-md-2">
+            <div class="card text-white bg-primary mb-2 shadow-lg border-0 animate__animated animate__fadeIn" style="min-height:120px; font-size:0.95rem;">
+                <div class="card-body p-2 text-center">
+                    <div class="mb-1">
+                        <i class="bi bi-bar-chart-fill fs-3"></i>
+                    </div>
+                    <h6 class="card-title">Ventes</h6>
+                    <p class="card-text fs-5">{{ total_transactions|intcomma }}</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-info mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">Vendeurs</h5>
-                    <p class="card-text fs-4">{{ total_sellers|intcomma }}</p>
+        <div class="col-6 col-md-2">
+            <div class="card text-white bg-info mb-2 shadow-lg border-0 animate__animated animate__fadeIn" style="min-height:120px; font-size:0.95rem;">
+                <div class="card-body p-2 text-center">
+                    <div class="mb-1">
+                        <i class="bi bi-people-fill fs-3"></i>
+                    </div>
+                    <h6 class="card-title">Vendeurs</h6>
+                    <p class="card-text fs-5">{{ total_sellers|intcomma }}</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-success mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">Produits</h5>
-                    <p class="card-text fs-4">{{ total_products|intcomma }}</p>
+        <div class="col-6 col-md-2">
+            <div class="card text-white bg-success mb-2 shadow-lg border-0 animate__animated animate__fadeIn" style="min-height:120px; font-size:0.95rem;">
+                <div class="card-body p-2 text-center">
+                    <div class="mb-1">
+                        <i class="bi bi-box-seam fs-3"></i>
+                    </div>
+                    <h6 class="card-title">Produits</h6>
+                    <p class="card-text fs-5">{{ total_products|intcomma }}</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-warning mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">Terminaux</h5>
-                    <p class="card-text fs-4">{{ total_pos|default:0|intcomma }}</p>
+        <div class="col-6 col-md-2">
+            <div class="card text-white bg-warning mb-2 shadow-lg border-0 animate__animated animate__fadeIn" style="min-height:120px; font-size:0.95rem;">
+                <div class="card-body p-2 text-center">
+                    <div class="mb-1">
+                        <i class="bi bi-tablet-fill fs-3"></i>
+                    </div>
+                    <h6 class="card-title">Terminaux</h6>
+                    <p class="card-text fs-5">{{ total_pos|default:0|intcomma }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card text-white bg-dark mb-2 shadow-lg border-0 animate__animated animate__fadeIn" style="min-height:120px; font-size:0.95rem;">
+                <div class="card-body p-2 text-center">
+                    <div class="mb-1">
+                        <i class="bi bi-cash-stack fs-3"></i>
+                    </div>
+                    <h6 class="card-title" style="color:#dc3545;">Revenu Total</h6>
+                    <p class="card-text fs-5">{{ total_sales|floatformat:3|intcomma }} Fc</p>
                 </div>
             </div>
         </div>
     </div>
-    <div class="row text-center">
-        <div class="col-md-3 mx-auto">
-            <div class="card text-white bg-dark mb-3">
+    <div class="row mt-3">
+        <div class="col-md-6">
+            <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Revenu Total</h5>
-                    <p class="card-text fs-4">{{ total_sales|floatformat:3|intcomma }} Fc</p>
+                    <h6 class="card-title mb-3">5 dernières ventes</h6>
+                    <ul class="list-group list-group-flush small">
+                        {% for vente in last_sales %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ vente.created_at|date:'d/m/Y H:i' }} - {{ vente.produit.nom_produit }}</span>
+                            <span class="badge bg-primary">{{ vente.price }} Fc</span>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-center">Aucune vente récente.</li>
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
         </div>
@@ -66,10 +103,16 @@
 
     <div class="row mt-4">
         <div class="col-md-6">
-            <div class="card">
+            <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Ventes au fil du temps</h5>
                     <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5 class="card-title">Prévision & Comparaison</h5>
+                    <canvas id="forecastCompareChart"></canvas>
                 </div>
             </div>
         </div>
@@ -94,41 +137,218 @@
         });
 
         // Données pour le graphique des ventes au fil du temps
-        console.log('sales_chart_data.labels:', '{{ sales_chart_data.labels|escapejs }}');
-        console.log('sales_chart_data.data:', '{{ sales_chart_data.data|escapejs }}');
         const salesChartData = {
             labels: JSON.parse('{{ sales_chart_data.labels|escapejs }}'),
-            datasets: [{
-                label: 'Ventes',
-                data: JSON.parse('{{ sales_chart_data.data|escapejs }}'),
-                borderColor: '#007bff',
-                backgroundColor: 'rgba(0, 123, 255, 0.2)',
-            }],
+            datasets: [
+                {
+                    label: 'Ventes',
+                    data: JSON.parse('{{ sales_chart_data.data|escapejs }}'),
+                    borderColor: '#007bff',
+                    backgroundColor: getGradient(document.getElementById('salesChart').getContext('2d')),
+                    fill: true,
+                    tension: 0.4, // arrondi des courbes
+                    pointRadius: 6,
+                    pointBackgroundColor: '#2563eb',
+                    pointBorderColor: '#fff',
+                    pointHoverRadius: 8,
+                    borderWidth: 3,
+                }
+            ],
         };
 
         // Données pour le graphique en camembert (répartition dynamique par vendeur)
-        console.log('pie_chart_data.labels:', '{{ pie_chart_data.labels|escapejs }}');
-        console.log('pie_chart_data.data:', '{{ pie_chart_data.data|escapejs }}');
         const pieData = {
             labels: JSON.parse('{{ pie_chart_data.labels|escapejs }}'),
-            datasets: [{
-                data: JSON.parse('{{ pie_chart_data.data|escapejs }}'),
-                backgroundColor: [
-                    '#007bff', '#17a2b8', '#28a745', '#ffc107', '#dc3545', '#6f42c1', '#fd7e14', '#20c997', '#6610f2', '#e83e8c'
-                ].slice(0, JSON.parse('{{ pie_chart_data.labels|escapejs }}').length),
-            }],
+            datasets: [
+                {
+                    data: JSON.parse('{{ pie_chart_data.data|escapejs }}'),
+                    backgroundColor: [
+                        '#007bff', '#17a2b8', '#28a745', '#ffc107', '#dc3545', '#6f42c1', '#fd7e14', '#20c997', '#6610f2', '#e83e8c'
+                    ].slice(0, JSON.parse('{{ pie_chart_data.labels|escapejs }}').length),
+                    borderWidth: 2,
+                    borderColor: '#fff',
+                }
+            ],
         };
+
+        // Option 3: options personnalisées
+        const salesChartOptions = {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        color: '#181f2a',
+                        font: { size: 16, weight: 'bold' }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Ventes au fil du temps',
+                    color: '#2563eb',
+                    font: { size: 20, weight: 'bold' }
+                },
+                tooltip: {
+                    enabled: true,
+                    backgroundColor: '#2563eb',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#fff',
+                    borderWidth: 1
+                },
+            },
+            animation: {
+                duration: 1500,
+                easing: 'easeOutBounce'
+            },
+            scales: {
+                x: {
+                    grid: { color: '#e5e7eb' },
+                    ticks: { color: '#181f2a', font: { size: 14 } }
+                },
+                y: {
+                    grid: { color: '#e5e7eb' },
+                    ticks: { color: '#181f2a', font: { size: 14 } }
+                }
+            }
+        };
+        const pieChartOptions = {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        color: '#181f2a',
+                        font: { size: 16 }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Répartition des ventes par vendeur',
+                    color: '#2563eb',
+                    font: { size: 20, weight: 'bold' }
+                },
+                tooltip: {
+                    enabled: true,
+                    backgroundColor: '#2563eb',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                },
+            },
+            animation: {
+                animateScale: true,
+                animateRotate: true,
+                duration: 1200,
+                easing: 'easeInOutQuart'
+            }
+        };
+
+        // Option 5: arrondir les coins (pour les barres, ici exemple sur pie)
+        Chart.defaults.elements.arc.borderRadius = 8;
 
         // Initialisation des graphiques
         const salesChart = new Chart(document.getElementById('salesChart'), {
-            type: 'line',
+            type: 'line', // Option 1: changer ici pour 'bar', 'radar', etc.
             data: salesChartData,
+            options: salesChartOptions
         });
 
         const salesPieChart = new Chart(document.getElementById('salesPieChart'), {
-            type: 'pie',
+            type: 'doughnut', // Option 1: changer ici pour 'pie', 'doughnut', etc.
             data: pieData,
+            options: pieChartOptions
         });
+
+        // Simulation de données (à retirer une fois les vraies données disponibles)
+        // Exemple de données de prévision (à remplacer par des vraies données backend si besoin)
+        const forecastData = salesChartData.labels.map(() => Math.floor(Math.random() * 100) + 50);
+        // Exemple de données de comparaison (à remplacer par des vraies données backend si besoin)
+        const compareData = salesChartData.labels.map(() => Math.floor(Math.random() * 80) + 30);
+
+        // Préparation des données pour le graphique Prévision & Comparaison
+        const forecastCompareData = {
+            labels: salesChartData.labels,
+            datasets: [
+                {
+                    label: 'Prévision',
+                    data: forecastData,
+                    borderColor: '#facc15',
+                    backgroundColor: 'rgba(250,204,21,0.15)',
+                    fill: true,
+                    borderDash: [5, 5],
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#facc15',
+                    pointBorderColor: '#fff',
+                    pointHoverRadius: 7,
+                    borderWidth: 2,
+                },
+                {
+                    label: 'Comparaison N-1',
+                    data: compareData,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239,68,68,0.10)',
+                    fill: false,
+                    borderDash: [2, 2],
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#ef4444',
+                    pointBorderColor: '#fff',
+                    pointHoverRadius: 7,
+                    borderWidth: 2,
+                }
+            ]
+        };
+        const forecastCompareOptions = {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: { color: '#181f2a', font: { size: 16 } }
+                },
+                title: {
+                    display: true,
+                    text: 'Prévision & Comparaison',
+                    color: '#2563eb',
+                    font: { size: 20, weight: 'bold' }
+                },
+                tooltip: {
+                    enabled: true,
+                    backgroundColor: '#2563eb',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                },
+            },
+            animation: {
+                duration: 1200,
+                easing: 'easeInOutQuart'
+            },
+            scales: {
+                x: {
+                    grid: { color: '#e5e7eb' },
+                    ticks: { color: '#181f2a', font: { size: 14 } }
+                },
+                y: {
+                    grid: { color: '#e5e7eb' },
+                    ticks: { color: '#181f2a', font: { size: 14 } }
+                }
+            }
+        };
+        // Initialisation du graphique Prévision & Comparaison
+        const forecastCompareChart = new Chart(document.getElementById('forecastCompareChart'), {
+            type: 'line',
+            data: forecastCompareData,
+            options: forecastCompareOptions
+        });
+
+        // Option 2: fonction pour gradient
+        function getGradient(ctx) {
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(37,99,235,0.5)');
+            gradient.addColorStop(1, 'rgba(37,99,235,0.05)');
+            return gradient;
+        }
     });
 </script>
 {% endblock %}

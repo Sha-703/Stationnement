@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Impression Rapport de vente{% endblock %}
+{% block content %}
+<style>
+@media print {
+    .sidebar, .navbar, .btn, .d-print-none { display: none !important; }
+    body { background: #fff !important; }
+    .container { margin: 0 !important; max-width: 100% !important; }
+    .card, .shadow, .main-content { box-shadow: none !important; border: none !important; }
+}
+</style>
+<div class="container mt-4">
+    <div class="text-center mb-4">
+        <h2>Rapport de vente {% if vendeur %}de {{ vendeur.nom_du_vendeur }}{% else %}global{% endif %}</h2>
+        <button class="btn btn-secondary d-print-none mt-2" onclick="window.print()"><i class="bi bi-printer"></i> Imprimer</button>
+    </div>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Produit</th>
+                <th>Prix</th>
+                <th>Vendeur</th>
+                <th>Description</th>
+                <th>Immatriculation</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vente in ventes %}
+            <tr>
+                <td>{{ vente.created_at|date:'d/m/Y H:i' }}</td>
+                <td>{{ vente.produit.nom_produit }}</td>
+                <td>{{ vente.price }} Fc</td>
+                <td>{{ vente.seller.nom_du_vendeur }}</td>
+                <td>{{ vente.description }}</td>
+                <td>{{ vente.license_plate }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center">Aucune vente trouvée.</td></tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="2">Total</th>
+                <th colspan="4">{{ total_ventes|default:0 }} Fc</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+{% endblock %}

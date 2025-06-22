@@ -136,6 +136,8 @@ def dashboard_view(request):
         'data': json.dumps([float(item['total_sales']) for item in sales_by_seller]),
     }
 
+    # 5 dernières ventes
+    last_sales = Sale.objects.select_related('produit', 'seller').order_by('-created_at')[:5]
     context = {
         'sales': all_sales,
         'total_sales': total_sales,
@@ -145,6 +147,7 @@ def dashboard_view(request):
         'total_pos': total_pos,
         'sales_chart_data': sales_chart_data,
         'pie_chart_data': pie_chart_data,
+        'last_sales': last_sales,
     }
     return render(request, 'dashboard.html', context)
 

@@ -44,11 +44,10 @@ class Invoice(models.Model):
 
 class POS(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    address = models.CharField(max_length=255, blank=True, null=True)
-    connection_type = models.CharField(max_length=50, choices=[('Bluetooth', 'Bluetooth'), ('USB', 'USB')])
+    vendeur = models.ForeignKey('Vendeur', on_delete=models.SET_NULL, null=True, blank=True, related_name='pos')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    is_connected = models.BooleanField(default=False)
+
 
     def __str__(self):
         return self.name

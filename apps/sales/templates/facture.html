@@ -1,47 +1,73 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Facture</title>
+    <title>{% block title %}Facture{% endblock %}</title>
     <link rel="stylesheet" href="/static/sales/pos.css">
     <script>
         function imprimerFacture() {
             window.print();
             setTimeout(function() {
-                window.location.href = "{% url 'effectuer_vente' %}";
+                window.location.href = "{% url 'accueil_vendeur' %}";
             }, 500);
         }
-
-        function imprimerTicket() {
-            var content = document.getElementById('factureDetails').innerHTML;
-            if (window.cordova && cordova.plugins && cordova.plugins.printer) {
-                cordova.plugins.printer.print('<html><body>' + content + '</body></html>', { name: 'Facture' });
-            } else {
-                alert('Impression non disponible sur ce périphérique.');
-            }
-        }
     </script>
+    <style>
+        .filigramme {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-25deg);
+            font-size: 5rem;
+            color: rgba(0,0,0,0.07);
+            z-index: 0;
+            pointer-events: none;
+            user-select: none;
+            font-weight: bold;
+            letter-spacing: 0.2em;
+        }
+        .facture-content {
+            position: relative;
+            background: #fff;
+            padding: 2rem 2.5rem;
+            max-width: 600px;
+            margin: 2rem auto;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+            border-radius: 16px;
+            min-height: 60vh;
+        }
+        .facture-table th {
+            width: 40%;
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        .facture-table td {
+            background: #fff;
+        }
+    </style>
 </head>
 <body>
-    <div class="facture-box" id="factureDetails">
-        <h2>Facture N° {{ facture.invoice_number }}</h2>
-        <p>Date d'émission : {{ facture.issued_at }}</p>
-        <hr>
-        <div style="text-align:center; margin-bottom:10px;">
+    <div class="facture-content">
+        <div class="filigramme">KONGO DIA BETO</div>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">Facture</h2>
             {% if qr_code_base64 %}
-                <img src="data:image/png;base64,{{ qr_code_base64 }}" alt="QR Code" style="width:80px; height:80px;" />
-                <p style="font-size:9px;">Scannez pour valider la facture</p>
+                <img src="data:image/png;base64,{{ qr_code_base64 }}" alt="QR Code" style="height:70px;">
             {% endif %}
         </div>
-        <h3>Détails de la vente</h3>
-        <ul>
-            <li>Produit : {{ vente.produit.nom_produit }}</li>
-            <li>Vendeur : {{ vente.seller.nom_du_vendeur }}</li>
-            <li>Description : {{ vente.description }}</li>
-            <li>Numéro matricule : {{ vente.license_plate }}</li>
-            <li>Prix total : {{ vente.price }} Fc</li>
-            <li>Date de vente : {{ vente.created_at }}</li>
-        </ul>
-        <button class="print-btn" onclick="imprimerFacture()">Imprimer la facture</button>
+        <hr>
+        <table class="table facture-table mb-4">
+            <tr><th>Numéro</th><td>{{ facture.invoice_number }}</td></tr>
+            <tr><th>Date</th><td>{{ vente.created_at|date:'d/m/Y H:i' }}</td></tr>
+            <tr><th>Vendeur</th><td>{{ vente.seller.nom_du_vendeur }}</td></tr>
+            <tr><th>Produit</th><td>{{ vente.produit.nom_produit }}</td></tr>
+            <tr><th>Immatriculation</th><td>{{ vente.license_plate }}</td></tr>
+            <tr><th>Prix</th><td><strong>{{ vente.price }} Fc</strong></td></tr>
+            <tr><th>Description</th><td>{{ vente.description }}</td></tr>
+        </table>
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-primary">Retour à l'accueil</a>
+            <button class="btn btn-secondary ms-2" onclick="imprimerFacture()">Imprimer la facture</button>
+        </div>
     </div>
 </body>
 </html>

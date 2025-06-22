@@ -23,5 +23,5 @@ class InvoiceAdmin(admin.ModelAdmin):
 
 @admin.register(POS)
 class POSAdmin(admin.ModelAdmin):
-    list_display = ('name', 'address', 'connection_type', 'is_connected')
-    search_fields = ('name', 'address')
+    list_display = ('name', 'vendeur', 'created_at', 'updated_at')
+    search_fields = ('name',)
