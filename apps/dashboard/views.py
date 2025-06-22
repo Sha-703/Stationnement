@@ -14,6 +14,7 @@ import datetime
 from django.views.generic import TemplateView
 import json
 from itertools import chain
+from django.contrib.auth.decorators import login_required
 
 @api_view(['GET'])
 def dashboard_overview(request):
@@ -70,6 +71,7 @@ def sales_statistics(request):
         'total_transactions': total_transactions
     })
 
+@login_required
 def dashboard_view(request):
     # Récupérer le filtre
     filter_type = request.GET.get('filter', 'monthly')

@@ -353,7 +353,7 @@ def logout_vendeur(request):
     except KeyError:
         pass
     logout(request)
-    return redirect('identification_vendeur')
+    return redirect('login')
 
 def base_context(request):
     return {'vendeur_id': request.session.get('vendeur_id')}
@@ -384,6 +384,7 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
+            from django.urls import reverse
             return redirect('dashboard')
         else:
             return render(request, 'login.html', {'form': {}, 'errors': True})

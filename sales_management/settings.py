@@ -140,3 +140,5 @@ CSRF_TRUSTED_ORIGINS = [
     'https://127.0.0.1',
     'https://*.monaca.mobi',  # Autorise toutes les previews Monaca
 ]
+
+LOGIN_URL = '/login/'
