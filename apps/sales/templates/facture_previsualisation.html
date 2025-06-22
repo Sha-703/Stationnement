@@ -106,15 +106,15 @@
             </div>
             <hr class="ticket-hr">
             <div class="ticket-details">
-                <strong>Détails de la vente</strong><br>
-                • Produit : {{ produit.nom_produit }}<br>
-                • Vendeur : {{ vendeur.nom_du_vendeur }}<br>
-                • Description : {{ description }}
+                <strong>DÉTAILS DE LA VENTE</strong><br>
+                • PRODUIT : {{ produit.nom_produit|upper }}<br>
+                • VENDEUR : {{ vendeur.nom_du_vendeur|upper }}<br>
+                • DESCRIPTION : {{ description|upper }}
             </div>
             <div class="ticket-details">
-                • Numéro matricule : {{ license_plate }}<br>
-                • Prix total : {{ prix|floatformat:2 }} Fc<br>
-                • Date de vente : {{ now|date:'d/m/Y H:i:s' }}
+                • NUMÉRO MATRICULE : {{ license_plate|upper }}<br>
+                • PRIX TOTAL : {{ prix|floatformat:2 }} FC<br>
+                • DATE DE VENTE : {{ now|date:'d/m/Y H:i:s' }}
             </div>
             <hr class="ticket-hr">
             <div class="ticket-footer">

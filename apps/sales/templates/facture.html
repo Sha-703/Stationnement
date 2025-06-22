@@ -85,13 +85,13 @@
         </div>
         <hr>
         <table class="table facture-table mb-4">
-            <tr><th>Numéro</th><td>{{ facture.invoice_number }}</td></tr>
-            <tr><th>Date</th><td>{{ vente.created_at|date:'d/m/Y H:i' }}</td></tr>
-            <tr><th>Vendeur</th><td>{{ vente.seller.nom_du_vendeur }}</td></tr>
-            <tr><th>Produit</th><td>{{ vente.produit.nom_produit }}</td></tr>
-            <tr><th>Immatriculation</th><td>{{ vente.license_plate }}</td></tr>
+            <tr><th>Numéro</th><td>{{ facture.invoice_number|upper }}</td></tr>
+            <tr><th>Date</th><td>{{ vente.created_at|date:'d/m/Y H:i:s' }}</td></tr>
+            <tr><th>Vendeur</th><td>{{ vente.seller.nom_du_vendeur|upper }}</td></tr>
+            <tr><th>Produit</th><td>{{ vente.produit.nom_produit|upper }}</td></tr>
+            <tr><th>Immatriculation</th><td>{{ vente.license_plate|upper }}</td></tr>
             <tr><th>Prix</th><td><strong>{{ vente.price }} Fc</strong></td></tr>
-            <tr><th>Description</th><td>{{ vente.description }}</td></tr>
+            <tr><th>Description</th><td>{{ vente.description|upper }}</td></tr>
         </table>
         <div class="text-center mt-4">
             <a href="/" class="btn btn-primary">Retour à l'accueil</a>

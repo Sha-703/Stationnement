@@ -118,7 +118,10 @@ class InvoiceDetailView(APIView):
             import base64
             from io import BytesIO
             qr = qrcode.QRCode(box_size=3, border=2)
-            qr.add_data(f"Facture N° {sale.id} | {sale.license_plate}")
+            # Date au format français (jour/mois/année heure:minute:seconde)
+            date_str = sale.created_at.strftime('%d/%m/%Y %H:%M:%S')
+            qr_data = f"FACTURE N° {str(sale.id).upper()} | {str(sale.license_plate).upper()} | PRODUIT : {str(sale.produit.nom_produit).upper()} | VENDEUR : {str(sale.seller.nom_du_vendeur).upper()} | PRIX : {str(sale.price).upper()} FCFA | DATE : {date_str}"
+            qr.add_data(qr_data)
             qr.make(fit=True)
             img = qr.make_image(fill_color="black", back_color="white")
             buffer = BytesIO()
@@ -130,7 +133,7 @@ class InvoiceDetailView(APIView):
             data['vendeur_email'] = sale.seller.email
             return Response(data, status=status.HTTP_200_OK)
         except Sale.DoesNotExist:
-            return Response({"error": "Vente introuvable"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Facture introuvable'}, status=status.HTTP_404_NOT_FOUND)
 
 class POSViewSet(viewsets.ModelViewSet):
     queryset = POS.objects.all()
@@ -361,9 +364,19 @@ def enregistrer_vente_apres_impression(request):
 def voir_facture(request, pk):
     facture = Invoice.objects.get(pk=pk)
     sale = facture.sale
-    # Générer un QR code avec toutes les infos de la vente
+    # Générer un QR code avec toutes les infos de la vente, en MAJUSCULES et date/heure française complète (avec secondes)
     qr = qrcode.QRCode(box_size=3, border=2)
-    qr_data = f"Facture: {facture.invoice_number}\nDate: {sale.created_at.strftime('%d/%m/%Y %H:%M')}\nVendeur: {sale.seller.nom_du_vendeur}\nProduit: {sale.produit.nom_produit}\nImmatriculation: {sale.license_plate}\nPrix: {sale.price} Fc\nDescription: {sale.description}\nImprimé par Kongo Dia Beto"
+    date_str = sale.created_at.strftime('%d/%m/%Y %H:%M:%S')
+    qr_data = (
+        f"FACTURE: {facture.invoice_number.upper()}\n"
+        f"DATE: {date_str}\n"
+        f"VENDEUR: {sale.seller.nom_du_vendeur.upper()}\n"
+        f"PRODUIT: {sale.produit.nom_produit.upper()}\n"
+        f"IMMATRICULATION: {sale.license_plate.upper()}\n"
+        f"PRIX: {str(sale.price).upper()} FC\n"
+        f"DESCRIPTION: {sale.description.upper()}\n"
+        f"IMPRIMÉ PAR KONGO DIA BETO"
+    )
     qr.add_data(qr_data)
     img = qr.make_image(fill_color="black", back_color="white")
     buffer = BytesIO()
