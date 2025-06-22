@@ -8,7 +8,7 @@ from .views import (
     identification_vendeur, effectuer_vente, voir_facture, previsualiser_facture, enregistrer_vente_apres_impression,
     pos_delete_view, VendeurLoginAPIView,
     rapport_vente_vendeur, accueil_vendeur, historique_vente, logout_vendeur, historique_vendeur,
-    rapport_vente_vendeur_print, login_view, enregistrer_vente_apres_impression
+    rapport_vente_vendeur_print, login_view, enregistrer_vente_apres_impression, logout_utilisateur
 )
 
 router = DefaultRouter()
@@ -59,4 +59,5 @@ urlpatterns = [
 
     path('', include(router.urls)),
     path('login/', login_view, name='login'),
+    path('logout/', logout_utilisateur, name='logout'),
 ]

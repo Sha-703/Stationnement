@@ -495,6 +495,14 @@ def logout_vendeur(request):
         del request.session['vendeur_id']
     return redirect('identification_vendeur')
 
+@login_required
+def logout_utilisateur(request):
+    """
+    Déconnecte l'utilisateur (auth classique) et redirige vers la page de login.
+    """
+    logout(request)
+    return redirect('login')
+
 def root_redirect(request):
     """
     Redirige l'utilisateur vers la page d'identification vendeur si aucune session utilisateur n'est active,
