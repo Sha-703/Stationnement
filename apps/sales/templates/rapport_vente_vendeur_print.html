@@ -12,6 +12,21 @@
 <div class="container mt-4">
     <div class="text-center mb-4">
         <h2>Rapport de vente {% if vendeur %}de {{ vendeur.nom_du_vendeur }}{% else %}global{% endif %}</h2>
+        <div class="mb-3 d-print-none">
+            <form method="get" class="row g-2 justify-content-center align-items-end">
+                <div class="col-auto">
+                    <label for="date_debut" class="form-label mb-0">Date de début</label>
+                    <input type="date" class="form-control" id="date_debut" name="date_debut" value="{{ date_debut }}">
+                </div>
+                <div class="col-auto">
+                    <label for="date_fin" class="form-label mb-0">Date de fin</label>
+                    <input type="date" class="form-control" id="date_fin" name="date_fin" value="{{ date_fin }}">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Filtrer</button>
+                </div>
+            </form>
+        </div>
         <button class="btn btn-secondary d-print-none mt-2" onclick="window.print()"><i class="bi bi-printer"></i> Imprimer</button>
     </div>
     <table class="table table-bordered table-striped">

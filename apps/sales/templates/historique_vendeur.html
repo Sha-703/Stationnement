@@ -5,17 +5,24 @@
     <div class="card shadow p-4">
         <h2 class="mb-4 text-center">Historique de {{ vendeur.nom_du_vendeur }}</h2>
         <form method="get" class="mb-3 row g-2 align-items-center justify-content-between">
-            <div class="col-auto">
-                <input type="date" name="date" class="form-control" value="{{ date|default_if_none:'' }}">
+            <div class="col-md-5">
+                <label for="date_debut" class="form-label">Date de début</label>
+                <input type="date" class="form-control" id="date_debut" name="date_debut" value="{{ date_debut }}">
             </div>
-            
-            <div class="col-auto">
-                <button type="submit" class="btn btn-primary">Filtrer</button>
+            <div class="col-md-5">
+                <label for="date_fin" class="form-label">Date de fin</label>
+                <input type="date" class="form-control" id="date_fin" name="date_fin" value="{{ date_fin }}">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Filtrer</button>
             </div>
             <div class="col-auto">
                 <a href="{% url 'rapport_vente_vendeur' %}" class="btn btn-secondary">Retour</a>
             </div>
         </form>
+        {% if total_ventes %}
+        <div class="alert alert-info text-center fw-bold" style="font-size:1.2rem;">Total sur la période : {{ total_ventes }} Fc</div>
+        {% endif %}
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -36,7 +43,7 @@
                     <td>{{ vente.license_plate }}</td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5" class="text-center">Aucune vente pour cette date.</td></tr>
+                <tr><td colspan="5" class="text-center">Aucune vente pour cette période.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

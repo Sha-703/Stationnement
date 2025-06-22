@@ -16,7 +16,7 @@ from .vente_form import VenteForm
 import qrcode
 import base64
 from io import BytesIO
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.template.loader import render_to_string
 from django import forms
 from django.views.decorators.csrf import csrf_exempt
@@ -26,8 +26,16 @@ from datetime import timedelta
 from django.template import RequestContext
 from django.db.models import Sum, Max
 from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
 
 User = get_user_model()
+
+def vendeur_required(view_func):
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.session.get('vendeur_id'):
+            return redirect('identification_vendeur')
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
 
 class ProductViewSet(ModelViewSet):
     queryset = Produit.objects.all()
@@ -146,11 +154,13 @@ def update_pos_status(request, pos_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+@login_required
 # Liste des vendeurs
 def vendeur_list_view(request):
     vendeurs = Vendeur.objects.all()
     return render(request, 'vendeurs_list.html', {'vendeurs': vendeurs})
 
+@login_required
 # Ajouter un vendeur
 def vendeur_create_view(request):
     if request.method == 'POST':
@@ -162,6 +172,7 @@ def vendeur_create_view(request):
         form = VendeurForm()
     return render(request, 'vendeur_form.html', {'form': form})
 
+@login_required
 # Modifier un vendeur
 def vendeur_update_view(request, pk):
     vendeur = get_object_or_404(Vendeur, pk=pk)
@@ -174,6 +185,7 @@ def vendeur_update_view(request, pk):
         form = VendeurForm(instance=vendeur)
     return render(request, 'vendeur_form.html', {'form': form})
 
+@login_required
 # Supprimer un vendeur
 def vendeur_delete_view(request, pk):
     vendeur = get_object_or_404(Vendeur, pk=pk)
@@ -182,11 +194,13 @@ def vendeur_delete_view(request, pk):
         return redirect('vendeur_list')
     return render(request, 'vendeur_confirm_delete.html', {'vendeur': vendeur})
 
+@login_required
 # Liste des produits
 def produit_list_view(request):
     produits = Produit.objects.all()
     return render(request, 'produits_list.html', {'produits': produits})
 
+@login_required
 # Ajouter un produit
 def produit_create_view(request):
     if request.method == 'POST':
@@ -198,6 +212,7 @@ def produit_create_view(request):
         form = ProduitForm()
     return render(request, 'produit_form.html', {'form': form})
 
+@login_required
 # Modifier un produit
 def produit_update_view(request, pk):
     produit = get_object_or_404(Produit, pk=pk)
@@ -210,6 +225,7 @@ def produit_update_view(request, pk):
         form = ProduitForm(instance=produit)
     return render(request, 'produit_form.html', {'form': form})
 
+@login_required
 # Supprimer un produit
 def produit_delete_view(request, pk):
     produit = get_object_or_404(Produit, pk=pk)
@@ -218,15 +234,24 @@ def produit_delete_view(request, pk):
         return redirect('produit_list')
     return render(request, 'produit_confirm_delete.html', {'produit': produit})
 
+@login_required
 def pos_list_view(request):
     pos_list = POS.objects.all()
     return render(request, 'pos_list.html', {'pos_list': pos_list})
+
+@login_required
+def pos_delete_view(request, pk):
+    pos = get_object_or_404(POS, pk=pk)
+    if request.method == 'POST':
+        pos.delete()
+        return redirect('pos_list')
+    return render(request, 'pos_confirm_delete.html', {'pos': pos})
 
 class VendeurIdentificationForm(forms.Form):
     nom_du_vendeur = forms.CharField(label="Nom du vendeur", max_length=100)
     email = forms.EmailField(label="Email", max_length=255)
 
-@csrf_exempt
+
 def identification_vendeur(request):
     # Si la requête vient de l'app mobile (JSON)
     if request.method == 'POST' and request.headers.get('Content-Type') == 'application/json':
@@ -291,7 +316,7 @@ def previsualiser_facture(request):
     last_id = Sale.objects.aggregate(max_id=Max('id'))['max_id'] or 0
     numero_previsionnel = last_id + 1
     qr = qrcode.QRCode(box_size=3, border=2)
-    qr_data = f"Facture prévisionnelle N° {numero_previsionnel}\nDate: {timezone.localtime(timezone.now()).strftime('%d/%m/%Y %H:%M')}\nVendeur: {vendeur.nom_du_vendeur}\nProduit: {produit.nom_produit}\nImmatriculation: {vente_temp['license_plate']}\nPrix: {produit.prix} Fc\nDescription: {vente_temp['description']}"
+    qr_data = f"Facture N° {numero_previsionnel}\nDate: {timezone.localtime(timezone.now()).strftime('%d/%m/%Y %H:%M')}\nVendeur: {vendeur.nom_du_vendeur}\nProduit: {produit.nom_produit}\nImmatriculation: {vente_temp['license_plate']}\nPrix: {produit.prix} Fc\nDescription: {vente_temp['description']}\nImprimé par Kongo Dia Beto"
     qr.add_data(qr_data)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
@@ -332,12 +357,13 @@ def enregistrer_vente_apres_impression(request):
     del request.session['vente_temp']
     return JsonResponse({'success': True, 'facture_id': facture.pk})
 
+@vendeur_required
 def voir_facture(request, pk):
     facture = Invoice.objects.get(pk=pk)
     sale = facture.sale
     # Générer un QR code avec toutes les infos de la vente
     qr = qrcode.QRCode(box_size=3, border=2)
-    qr_data = f"Facture: {facture.invoice_number}\nDate: {sale.created_at.strftime('%d/%m/%Y %H:%M')}\nVendeur: {sale.seller.nom_du_vendeur}\nProduit: {sale.produit.nom_produit}\nImmatriculation: {sale.license_plate}\nPrix: {sale.price} Fc\nDescription: {sale.description}"
+    qr_data = f"Facture: {facture.invoice_number}\nDate: {sale.created_at.strftime('%d/%m/%Y %H:%M')}\nVendeur: {sale.seller.nom_du_vendeur}\nProduit: {sale.produit.nom_produit}\nImmatriculation: {sale.license_plate}\nPrix: {sale.price} Fc\nDescription: {sale.description}\nImprimé par Kongo Dia Beto"
     qr.add_data(qr_data)
     img = qr.make_image(fill_color="black", back_color="white")
     buffer = BytesIO()
@@ -350,13 +376,6 @@ def voir_facture(request, pk):
     })
     return HttpResponse(html)
 
-def pos_delete_view(request, pk):
-    pos = get_object_or_404(POS, pk=pk)
-    if request.method == 'POST':
-        pos.delete()
-        return redirect('pos_list')
-    return render(request, 'pos_confirm_delete.html', {'pos': pos})
-
 class VendeurLoginAPIView(APIView):
     def post(self, request):
         email = request.data.get('email')
@@ -367,6 +386,7 @@ class VendeurLoginAPIView(APIView):
         except Vendeur.DoesNotExist:
             return Response({'error': 'Nom ou email invalide'}, status=status.HTTP_401_UNAUTHORIZED)
 
+@login_required
 def rapport_vente_vendeur(request):
     vendeurs = Vendeur.objects.all()
     for v in vendeurs:
@@ -375,53 +395,30 @@ def rapport_vente_vendeur(request):
         v.total_ventes = ventes.aggregate(total=Sum('price'))['total'] or 0
     return render(request, 'rapport_vente_vendeur.html', {'vendeurs': vendeurs})
 
-
-def accueil_vendeur(request):
-    vendeur_id = request.session.get('vendeur_id')
-    if not vendeur_id:
-        return redirect('identification_vendeur')
-    vendeur = Vendeur.objects.get(id=vendeur_id)
-    return render(request, 'accueil_vendeur.html', {'vendeur': vendeur})
-
-
-def historique_vendeur(request, vendeur_id):
-    vendeur = get_object_or_404(Vendeur, id=vendeur_id)
-    date = request.GET.get('date')
-    ventes = Sale.objects.filter(seller=vendeur)
-    if date:
-        ventes = ventes.filter(created_at__date=date)
-    return render(request, 'historique_vendeur.html', {'vendeur': vendeur, 'ventes': ventes, 'date': date})
-
-def logout_vendeur(request):
-    try:
-        del request.session['vendeur_id']
-    except KeyError:
-        pass
-    logout(request)
-    return redirect('identification_vendeur')
-
-def base_context(request):
-    return {'vendeur_id': request.session.get('vendeur_id')}
-
-def historique_vente(request):
-    vendeur_id = request.session.get('vendeur_id')
-    if not vendeur_id:
-        return redirect('identification_vendeur')
-    vendeur = Vendeur.objects.get(id=vendeur_id)
-    today = timezone.now().date()
-    ventes = Sale.objects.filter(seller=vendeur, created_at__date=today)
-    total_journalier = ventes.aggregate(total=Sum('price'))['total'] or 0
-    return render(request, 'historique_vente.html', {'vendeur': vendeur, 'ventes': ventes, 'total_journalier': total_journalier})
-
+@login_required
 def rapport_vente_vendeur_print(request, vendeur_id=None):
+    date_debut = request.GET.get('date_debut')
+    date_fin = request.GET.get('date_fin')
     if vendeur_id:
         vendeur = Vendeur.objects.get(id=vendeur_id)
-        ventes = Sale.objects.filter(seller=vendeur).order_by('-created_at')
+        ventes = Sale.objects.filter(seller=vendeur)
+        if date_debut and date_fin:
+            ventes = ventes.filter(created_at__date__gte=date_debut, created_at__date__lte=date_fin)
+        ventes = ventes.order_by('-created_at')
     else:
         vendeur = None
-        ventes = Sale.objects.all().order_by('-created_at')
+        ventes = Sale.objects.all()
+        if date_debut and date_fin:
+            ventes = ventes.filter(created_at__date__gte=date_debut, created_at__date__lte=date_fin)
+        ventes = ventes.order_by('-created_at')
     total_ventes = ventes.aggregate(total=Sum('price'))['total'] or 0
-    return render(request, 'rapport_vente_vendeur_print.html', {'ventes': ventes, 'vendeur': vendeur, 'total_ventes': total_ventes})
+    return render(request, 'rapport_vente_vendeur_print.html', {
+        'ventes': ventes,
+        'vendeur': vendeur,
+        'total_ventes': total_ventes,
+        'date_debut': date_debut,
+        'date_fin': date_fin,
+    })
 
 def login_view(request):
     if request.method == 'POST':
@@ -435,3 +432,77 @@ def login_view(request):
         else:
             return render(request, 'login.html', {'form': {}, 'errors': True})
     return render(request, 'login.html', {'form': {}})
+
+@vendeur_required
+def accueil_vendeur(request):
+    vendeur_id = request.session.get('vendeur_id')
+    vendeur = Vendeur.objects.get(id=vendeur_id)
+    return render(request, 'accueil_vendeur.html', {'vendeur': vendeur})
+
+@login_required
+def historique_vendeur(request, vendeur_id):
+    """
+    Affiche l'historique des ventes pour un vendeur donné (accès restreint à l'utilisateur connecté).
+    """
+    vendeur = get_object_or_404(Vendeur, id=vendeur_id)
+    date_debut = request.GET.get('date_debut')
+    date_fin = request.GET.get('date_fin')
+    ventes = Sale.objects.filter(seller=vendeur)
+    if date_debut and date_fin:
+        ventes = ventes.filter(created_at__date__gte=date_debut, created_at__date__lte=date_fin)
+    ventes = ventes.order_by('-created_at')
+    total_ventes = ventes.aggregate(total=Sum('price'))['total'] or 0
+    return render(request, 'historique_vendeur.html', {
+        'vendeur': vendeur,
+        'ventes': ventes,
+        'total_ventes': total_ventes,
+        'date_debut': date_debut,
+        'date_fin': date_fin,
+    })
+
+@vendeur_required
+def historique_vente(request):
+    """
+    Affiche l'historique journalier des ventes pour le vendeur identifié (accès restreint à la session vendeur_id).
+    """
+    vendeur_id = request.session.get('vendeur_id')
+    if not vendeur_id:
+        return redirect('identification_vendeur')
+    vendeur = Vendeur.objects.get(id=vendeur_id)
+    date_debut = request.GET.get('date_debut')
+    date_fin = request.GET.get('date_fin')
+    ventes = Sale.objects.filter(seller=vendeur)
+    if date_debut and date_fin:
+        ventes = ventes.filter(created_at__date__gte=date_debut, created_at__date__lte=date_fin)
+    else:
+        today = timezone.now().date()
+        ventes = ventes.filter(created_at__date=today)
+    total_journalier = ventes.aggregate(total=Sum('price'))['total'] or 0
+    return render(request, 'historique_vente.html', {
+        'vendeur': vendeur,
+        'ventes': ventes,
+        'total_journalier': total_journalier,
+        'date_debut': date_debut,
+        'date_fin': date_fin,
+    })
+
+@vendeur_required
+def logout_vendeur(request):
+    """
+    Déconnecte le vendeur identifié via session (supprime vendeur_id de la session) et redirige vers la page d'identification vendeur.
+    """
+    if 'vendeur_id' in request.session:
+        del request.session['vendeur_id']
+    return redirect('identification_vendeur')
+
+def root_redirect(request):
+    """
+    Redirige l'utilisateur vers la page d'identification vendeur si aucune session utilisateur n'est active,
+    sinon vers le dashboard si connecté, sinon vers la page login.
+    """
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+    elif request.session.get('vendeur_id'):
+        return redirect('accueil_vendeur')
+    else:
+        return redirect('login')
