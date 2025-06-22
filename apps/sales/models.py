@@ -10,6 +10,11 @@ class Produit(models.Model):
     def __str__(self):
         return self.nom_produit
 
+    def save(self, *args, **kwargs):
+        if self.nom_produit:
+            self.nom_produit = self.nom_produit.upper()
+        super().save(*args, **kwargs)
+
 class Vendeur(models.Model):
     nom_du_vendeur = models.CharField(max_length=100)
     email = models.EmailField(max_length=255, unique=True)  # Adresse e-mail
