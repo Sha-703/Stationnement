@@ -9,7 +9,7 @@
         <table class="table table-striped table-bordered">
             <thead class="table-dark">
                 <tr>
-                    <th>Produit</th>
+                    <th>Type d'Engin</th>
                     <th>Vendeur</th>
                     <th>Description</th>
                     <th>Plaque d'immatriculation</th>
@@ -20,7 +20,7 @@
             <tbody>
                 {% for sale in sales %}
                 <tr>
-                    <td>{{ sale.produit.nom_produit }}</td>
+                    <td>{{ sale.type_engin.nom_type_engin }}</td>
                     <td>{{ sale.seller.nom_du_vendeur }}</td>
                     <td>{{ sale.description }}</td>
                     <td>{{ sale.license_plate }}</td>

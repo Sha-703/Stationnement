@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Liste des Types d'Engin{% endblock %}
+{% block dashboard_menu %}{{ block.super }}{% endblock %}
+
+{% block content %}
+<h1 class="text-center mb-4">Liste des Types d'Engin</h1>
+<a href="{% url 'type_engin_create' %}" class="btn btn-primary mb-3">Ajouter un Type d'Engin</a>
+<div class="table-responsive">
+    <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Nom</th>
+                <th>Prix</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for type_engin in types_engin %}
+            <tr>
+                <td>{{ type_engin.nom_type_engin }}</td>
+                <td>{{ type_engin.prix }}</td>
+                <td>{{ type_engin.default_description }}</td>
+                <td>
+                    <a href="{% url 'type_engin_update' type_engin.id %}" class="btn btn-warning btn-sm">Modifier</a>
+                    <a href="{% url 'type_engin_delete' type_engin.id %}" class="btn btn-danger btn-sm">Supprimer</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

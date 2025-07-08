@@ -88,7 +88,7 @@
             <tr><th>Numéro</th><td>{{ facture.invoice_number|upper }}</td></tr>
             <tr><th>Date</th><td>{{ vente.created_at|date:'d/m/Y H:i:s' }}</td></tr>
             <tr><th>Vendeur</th><td>{{ vente.seller.nom_du_vendeur|upper }}</td></tr>
-            <tr><th>Produit</th><td>{{ vente.produit.nom_produit|upper }}</td></tr>
+            <tr><th>Type Engin</th><td>{{ vente.type_engin.nom_type_engin|upper }}</td></tr>
             <tr><th>Immatriculation</th><td>{{ vente.license_plate|upper }}</td></tr>
             <tr><th>Prix</th><td><strong>{{ vente.price }} Fc</strong></td></tr>
             <tr><th>Description</th><td>{{ vente.description|upper }}</td></tr>

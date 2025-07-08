@@ -1,14 +1,14 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    SalesListView, SalesDetailView, CreateSaleView, ValidateSaleView, LoginView, ProductListView, InvoiceDetailView,
+    SalesListView, SalesDetailView, CreateSaleView, ValidateSaleView, LoginView, InvoiceDetailView,
     vendeur_list_view, vendeur_create_view, vendeur_update_view, vendeur_delete_view,
-    produit_list_view, produit_create_view, produit_update_view, produit_delete_view,
     POSViewSet, POSCreateView, update_pos_status, pos_list_view,
     identification_vendeur, effectuer_vente, voir_facture, previsualiser_facture, enregistrer_vente_apres_impression,
     pos_delete_view, VendeurLoginAPIView,
     rapport_vente_vendeur, accueil_vendeur, historique_vente, logout_vendeur, historique_vendeur,
-    rapport_vente_vendeur_print, login_view, enregistrer_vente_apres_impression, logout_utilisateur
+    rapport_vente_vendeur_print, login_view, enregistrer_vente_apres_impression, logout_utilisateur,
+    TypeEnginListView, TypeEnginCreateView, TypeEnginUpdateView, TypeEnginDeleteView
 )
 
 router = DefaultRouter()
@@ -20,7 +20,6 @@ urlpatterns = [
     path('sales/create/', CreateSaleView.as_view(), name='create-sale'),
     path('sales/validate/<int:pk>/', ValidateSaleView.as_view(), name='validate-sale'),
     path('auth/login/', LoginView.as_view(), name='login'),
-    path('products/', ProductListView.as_view(), name='product-list'),
     path('sales/<int:sale_id>/invoice/', InvoiceDetailView.as_view(), name='invoice-detail'),
 
     # Routes pour les vendeurs
@@ -28,12 +27,6 @@ urlpatterns = [
     path('vendeurs/ajouter/', vendeur_create_view, name='vendeur_create'),
     path('vendeurs/modifier/<int:pk>/', vendeur_update_view, name='vendeur_update'),
     path('vendeurs/supprimer/<int:pk>/', vendeur_delete_view, name='vendeur_delete'),
-
-    # Routes pour les produits
-    path('produits/', produit_list_view, name='produit_list'),
-    path('produits/ajouter/', produit_create_view, name='produit_create'),
-    path('produits/modifier/<int:pk>/', produit_update_view, name='produit_update'),
-    path('produits/supprimer/<int:pk>/', produit_delete_view, name='produit_delete'),
 
     path('pos/delete/<int:pk>/', pos_delete_view, name='delete_pos'),
     path('pos/add/', POSCreateView.as_view(), name='add_pos'),
@@ -60,4 +53,10 @@ urlpatterns = [
     path('', include(router.urls)),
     path('login/', login_view, name='login'),
     path('logout/', logout_utilisateur, name='logout'),
+
+    # Routes pour les types d'engin
+    path('types-engin/', TypeEnginListView.as_view(), name='type_engin_list'),
+    path('types-engin/ajouter/', TypeEnginCreateView.as_view(), name='type_engin_create'),
+    path('types-engin/modifier/<int:pk>/', TypeEnginUpdateView.as_view(), name='type_engin_update'),
+    path('types-engin/supprimer/<int:pk>/', TypeEnginDeleteView.as_view(), name='type_engin_delete'),
 ]

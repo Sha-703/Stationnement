@@ -4,7 +4,7 @@ from django.db.models import Sum, Count, Q, F
 from django.utils.timezone import now
 from django.db import models
 from django.db.models.functions import TruncDay, TruncMonth, TruncYear
-from apps.sales.models import Sale, Produit, Vendeur, POS  # Ajout de POS à l'import
+from apps.sales.models import Sale, TypeEngin, Vendeur, POS  # Ajout de POS à l'import
 from .models import Dashboard
 from rest_framework.decorators import api_view
 from .serializers import DashboardSerializer
@@ -28,19 +28,19 @@ def dashboard_statistics(request):
     if filter_type == 'daily':
         sales = Sale.objects.annotate(period=TruncDay('created_at')).values('period').annotate(
             total=Sum('price'),
-            product_name=F('produit__nom_produit'),
+            type_engin_name=F('type_engin__nom_type_engin'),
             seller_name=F('seller__nom_du_vendeur')
         )
     elif filter_type == 'monthly':
         sales = Sale.objects.annotate(period=TruncMonth('created_at')).values('period').annotate(
             total=Sum('price'),
-            product_name=F('produit__nom_produit'),
+            type_engin_name=F('type_engin__nom_type_engin'),
             seller_name=F('seller__nom_du_vendeur')
         )
     elif filter_type == 'yearly':
         sales = Sale.objects.annotate(period=TruncYear('created_at')).values('period').annotate(
             total=Sum('price'),
-            product_name=F('produit__nom_produit'),
+            type_engin_name=F('type_engin__nom_type_engin'),
             seller_name=F('seller__nom_du_vendeur')
         )
     else:
@@ -50,7 +50,7 @@ def dashboard_statistics(request):
         {
             'period': sale['period'].strftime('%Y-%m-%d') if isinstance(sale['period'], datetime.date) else str(sale['period']),
             'total': sale['total'],
-            'product_name': sale['product_name'],
+            'type_engin_name': sale['type_engin_name'],
             'seller_name': sale['seller_name']
         }
         for sale in sales
@@ -75,8 +75,8 @@ def sales_statistics(request):
 def dashboard_view(request):
     # Récupérer le filtre
     filter_type = request.GET.get('filter', 'monthly')
-    sales = Sale.objects.select_related('produit', 'seller').all()
-    ventes = Sale.objects.select_related('produit', 'seller').all()  # Remplace Vente par Sale
+    sales = Sale.objects.select_related('type_engin', 'seller').all()
+    ventes = Sale.objects.select_related('type_engin', 'seller').all()  # Remplace Vente par Sale
 
     # Fusionner les ventes des deux apps
     all_sales = sales.union(ventes)
@@ -84,7 +84,7 @@ def dashboard_view(request):
     # Pour le graphique, on ne prend que les ventes de Sale (pour compatibilité existante)
     # Mais pour les totaux, on additionne tout
     total_sales = sum([getattr(s, 'price', getattr(s, 'prix_total', 0)) for s in all_sales])
-    total_products = Produit.objects.count()
+    total_products = TypeEngin.objects.count()
     total_sellers = Vendeur.objects.count()
     total_transactions = len(all_sales)
     total_pos = POS.objects.count()
@@ -122,7 +122,7 @@ def dashboard_view(request):
 
     # Statistiques globales
     total_sales = sales.aggregate(total_sales=Sum('price'))['total_sales'] or 0
-    total_products = Produit.objects.count()
+    total_products = TypeEngin.objects.count()
     total_sellers = Vendeur.objects.count()
     total_transactions = sales.count()
     total_pos = POS.objects.count()
@@ -139,7 +139,7 @@ def dashboard_view(request):
     }
 
     # 5 dernières ventes
-    last_sales = Sale.objects.select_related('produit', 'seller').order_by('-created_at')[:5]
+    last_sales = Sale.objects.select_related('type_engin', 'seller').order_by('-created_at')[:5]
     context = {
         'sales': all_sales,
         'total_sales': total_sales,
@@ -154,7 +154,7 @@ def dashboard_view(request):
     return render(request, 'dashboard.html', context)
 
 def sales_list_view(request):
-    sales = Sale.objects.select_related('produit', 'seller').all()  # Inclure les relations avec Produit et Vendeur
+    sales = Sale.objects.select_related('type_engin', 'seller').all()  # Inclure les relations avec Produit et Vendeur
     context = {
         'sales': sales,
     }
@@ -165,10 +165,10 @@ def export_sales_csv(request):
     response['Content-Disposition'] = 'attachment; filename="sales.csv"'
 
     writer = csv.writer(response)
-    writer.writerow(['Produit', 'Vendeur', 'Prix', 'Date'])
+    writer.writerow(['Type d\'Engin', 'Vendeur', 'Prix', 'Date'])
 
     for sale in Sale.objects.all():
-        writer.writerow([sale.produit.nom_produit, sale.seller.nom_du_vendeur, sale.price, sale.created_at])
+        writer.writerow([sale.type_engin.nom_type_engin, sale.seller.nom_du_vendeur, sale.price, sale.created_at])
 
     return response
 

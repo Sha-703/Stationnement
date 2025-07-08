@@ -1,10 +1,10 @@
 from django.contrib import admin
-from .models import Produit, Vendeur, Sale, Invoice, POS
+from .models import TypeEngin, Vendeur, Sale, Invoice, POS
 
-@admin.register(Produit)
+@admin.register(TypeEngin)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('nom_produit', 'prix', 'default_description', 'created_at')
-    search_fields = ('nom_produit',)
+    list_display = ('nom_type_engin', 'prix', 'default_description', 'created_at')
+    search_fields = ('nom_type_engin',)
 
 @admin.register(Vendeur)
 class SellerAdmin(admin.ModelAdmin):
@@ -13,8 +13,8 @@ class SellerAdmin(admin.ModelAdmin):
 
 @admin.register(Sale)
 class SaleAdmin(admin.ModelAdmin):
-    list_display = ('produit', 'seller', 'description', 'license_plate', 'price', 'created_at')
-    search_fields = ('produit__nom_produit', 'seller__store_name')
+    list_display = ('type_engin', 'seller', 'description', 'license_plate', 'price', 'created_at')
+    search_fields = ('type_engin__nom_type_engin', 'seller__store_name')
 
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):

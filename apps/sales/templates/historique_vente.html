@@ -41,7 +41,7 @@
             <thead class="table-dark">
                 <tr>
                     <th>Date</th>
-                    <th>Produit</th>
+                    <th>Type d'Engin</th>
                     <th>Prix</th>
                     <th>Description</th>
                     <th>Immatriculation</th>
@@ -51,7 +51,7 @@
                 {% for vente in ventes %}
                 <tr>
                     <td>{{ vente.created_at|date:'d/m/Y H:i' }}</td>
-                    <td>{{ vente.produit.nom_produit }}</td>
+                    <td>{{ vente.type_engin.nom_type_engin }}</td>
                     <td><span class="badge bg-primary">{{ vente.price }} Fc</span></td>
                     <td>{{ vente.description }}</td>
                     <td>{{ vente.license_plate }}</td>

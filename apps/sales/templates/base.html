@@ -41,10 +41,10 @@
                     <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' viewBox='0 0 24 24'><circle cx='12' cy='8' r='4' fill='#2563eb'/><rect x='6' y='14' width='12' height='6' rx='3' fill='#2563eb'/></svg>
                 </span>Vendeurs
             </a>
-            <a class="nav-link {% if request.path == '/produits/' %}active{% endif %}" href="{% url 'produit_list' %}">
+            <a class="nav-link {% if request.path == '/types-engin/' %}active{% endif %}" href="{% url 'type_engin_list' %}">
                 <span style="display:inline-block; width:24px; text-align:center; margin-right:8px; color:#a5b4fc;">
                     <svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='currentColor' viewBox='0 0 24 24'><rect x='4' y='4' width='16' height='16' rx='4' fill='#2563eb'/></svg>
-                </span>Produits
+                </span>Types d'Engin
             </a>
             <a class="nav-link {% if request.path == '/pos/' %}active{% endif %}" href="{% url 'pos_list' %}">
                 <span style="display:inline-block; width:24px; text-align:center; margin-right:8px; color:#a5b4fc;">

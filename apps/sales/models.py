@@ -1,18 +1,18 @@
 from django.db import models
 from django.utils.timezone import now
 
-class Produit(models.Model):
-    nom_produit = models.CharField(max_length=100)  # Nom du produit
+class TypeEngin(models.Model):
+    nom_type_engin = models.CharField(max_length=100)  # Type d'engin
     prix = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)  # Prix par défaut
     default_description = models.TextField(blank=True, null=True)  # Description par défaut
     created_at = models.DateTimeField(default=now)  # Utiliser timezone.now comme valeur par défaut
 
     def __str__(self):
-        return self.nom_produit
+        return self.nom_type_engin
 
     def save(self, *args, **kwargs):
-        if self.nom_produit:
-            self.nom_produit = self.nom_produit.upper()
+        if self.nom_type_engin:
+            self.nom_type_engin = self.nom_type_engin.upper()
         if self.default_description:
             self.default_description = self.default_description.upper()
         super().save(*args, **kwargs)
@@ -30,7 +30,7 @@ class Vendeur(models.Model):
         super().save(*args, **kwargs)
 
 class Sale(models.Model):
-    produit = models.ForeignKey('Produit', on_delete=models.CASCADE)  # Champ correct
+    type_engin = models.ForeignKey('TypeEngin', on_delete=models.CASCADE)  # Champ correct
     seller = models.ForeignKey('Vendeur', on_delete=models.CASCADE)
     description = models.TextField(default="Aucune description")
     license_plate = models.CharField(max_length=20)
@@ -44,7 +44,7 @@ class Sale(models.Model):
     source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default='WEB')
 
     def __str__(self):
-        return f"{self.produit} vendu par {self.seller}"
+        return f"{self.type_engin} vendu par {self.seller}"
 
     def save(self, *args, **kwargs):
         if self.description:

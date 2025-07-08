@@ -4,7 +4,7 @@
 <table border="1" cellpadding="5" cellspacing="0">
     <thead>
         <tr>
-            <th>Produit</th>
+            <th>Type d'Engin</th>
             <th>Vendeur</th>
             <th>Quantité</th>
             <th>Prix total</th>
@@ -14,7 +14,7 @@
     <tbody>
         {% for vente in ventes %}
         <tr>
-            <td>{{ vente.produit.nom_produit }}</td>
+            <td>{{ vente.type_engin.nom_type_engin }}</td>
             <td>{{ vente.vendeur.nom_du_vendeur }}</td>
             <td>{{ vente.quantite }}</td>
             <td>{{ vente.prix_total }} FCFA</td>

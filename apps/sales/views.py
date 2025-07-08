@@ -9,9 +9,9 @@ from django.contrib.auth import get_user_model, authenticate, login
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
-from .models import Produit, Sale, Vendeur, POS, Invoice  # Ajout de Invoice à l'import
-from .serializers import ProductSerializer, SaleSerializer, InvoiceSerializer, POSSerializer
-from .forms import VendeurForm, ProduitForm, POSForm
+from .models import TypeEngin, Sale, Vendeur, POS, Invoice  # Ajout de Invoice à l'import
+from .serializers import TypeEnginSerializer, SaleSerializer, InvoiceSerializer, POSSerializer
+from .forms import VendeurForm, TypeEnginForm, POSForm
 from .vente_form import VenteForm
 import qrcode
 import base64
@@ -27,6 +27,7 @@ from django.template import RequestContext
 from django.db.models import Sum, Max
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
+from django.views.generic import ListView, UpdateView, DeleteView
 
 User = get_user_model()
 
@@ -37,13 +38,9 @@ def vendeur_required(view_func):
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 
-class ProductViewSet(ModelViewSet):
-    queryset = Produit.objects.all()
-    serializer_class = ProductSerializer
-
-class ProductListView(ListAPIView):
-    queryset = Produit.objects.all()
-    serializer_class = ProductSerializer
+class TypeEnginViewSet(ModelViewSet):
+    queryset = TypeEngin.objects.all()
+    serializer_class = TypeEnginSerializer
 
 class SaleViewSet(ModelViewSet):
     queryset = Sale.objects.all()
@@ -70,24 +67,24 @@ class SalesDetailView(RetrieveAPIView):
 
 class CreateSaleView(APIView):
     def post(self, request):
-        produit_id = request.data.get('produit_id')
+        type_engin_id = request.data.get('type_engin_id')
         vendeur_id = request.data.get('vendeur_id')
         description = request.data.get('description')
         license_plate = request.data.get('license_plate')
 
         try:
-            produit = Produit.objects.get(id=produit_id)
+            type_engin = TypeEngin.objects.get(id=type_engin_id)
             vendeur = Vendeur.objects.get(id=vendeur_id)
             sale = Sale.objects.create(
-                produit=produit,
+                type_engin=type_engin,
                 seller=vendeur,
                 description=description,
                 license_plate=license_plate,
-                price=produit.prix
+                price=type_engin.prix
             )
             return Response({"message": "Vente créée avec succès", "sale_id": sale.id}, status=status.HTTP_201_CREATED)
-        except Produit.DoesNotExist:
-            return Response({"error": "Produit introuvable"}, status=status.HTTP_404_NOT_FOUND)
+        except TypeEngin.DoesNotExist:
+            return Response({"error": "Type d'engin introuvable"}, status=status.HTTP_404_NOT_FOUND)
         except Vendeur.DoesNotExist:
             return Response({"error": "Vendeur introuvable"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -120,7 +117,7 @@ class InvoiceDetailView(APIView):
             qr = qrcode.QRCode(box_size=3, border=2)
             # Date au format français (jour/mois/année heure:minute:seconde)
             date_str = sale.created_at.strftime('%d/%m/%Y %H:%M:%S')
-            qr_data = f"FACTURE N° {str(sale.id).upper()} | {str(sale.license_plate).upper()} | PRODUIT : {str(sale.produit.nom_produit).upper()} | VENDEUR : {str(sale.seller.nom_du_vendeur).upper()} | PRIX : {str(sale.price).upper()} FCFA | DATE : {date_str}"
+            qr_data = f"FACTURE N° {str(sale.id).upper()} | {str(sale.license_plate).upper()} | TYPE ENGIN : {str(sale.type_engin.nom_type_engin).upper()} | VENDEUR : {str(sale.seller.nom_du_vendeur).upper()} | PRIX : {str(sale.price).upper()} FCFA | DATE : {date_str}"
             qr.add_data(qr_data)
             qr.make(fit=True)
             img = qr.make_image(fill_color="black", back_color="white")
@@ -198,46 +195,6 @@ def vendeur_delete_view(request, pk):
     return render(request, 'vendeur_confirm_delete.html', {'vendeur': vendeur})
 
 @login_required
-# Liste des produits
-def produit_list_view(request):
-    produits = Produit.objects.all()
-    return render(request, 'produits_list.html', {'produits': produits})
-
-@login_required
-# Ajouter un produit
-def produit_create_view(request):
-    if request.method == 'POST':
-        form = ProduitForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('produit_list')
-    else:
-        form = ProduitForm()
-    return render(request, 'produit_form.html', {'form': form})
-
-@login_required
-# Modifier un produit
-def produit_update_view(request, pk):
-    produit = get_object_or_404(Produit, pk=pk)
-    if request.method == 'POST':
-        form = ProduitForm(request.POST, instance=produit)
-        if form.is_valid():
-            form.save()
-            return redirect('produit_list')
-    else:
-        form = ProduitForm(instance=produit)
-    return render(request, 'produit_form.html', {'form': form})
-
-@login_required
-# Supprimer un produit
-def produit_delete_view(request, pk):
-    produit = get_object_or_404(Produit, pk=pk)
-    if request.method == 'POST':
-        produit.delete()
-        return redirect('produit_list')
-    return render(request, 'produit_confirm_delete.html', {'produit': produit})
-
-@login_required
 def pos_list_view(request):
     pos_list = POS.objects.all()
     return render(request, 'pos_list.html', {'pos_list': pos_list})
@@ -298,7 +255,7 @@ def effectuer_vente(request):
         if form.is_valid():
             # Stocker les infos de la vente en session
             request.session['vente_temp'] = {
-                'produit_id': form.cleaned_data['produit'].id,
+                'type_engin_id': form.cleaned_data['type_engin'].id,
                 'description': form.cleaned_data['description'],
                 'license_plate': form.cleaned_data['license_plate'],
             }
@@ -314,12 +271,12 @@ def previsualiser_facture(request):
     if not vente_temp or not vendeur_id:
         return redirect('effectuer_vente')
     vendeur = Vendeur.objects.get(id=vendeur_id)
-    produit = Produit.objects.get(id=vente_temp['produit_id'])
+    type_engin = TypeEngin.objects.get(id=vente_temp['type_engin_id'])
     # Numéro prévisionnel de facture
     last_id = Sale.objects.aggregate(max_id=Max('id'))['max_id'] or 0
     numero_previsionnel = last_id + 1
     qr = qrcode.QRCode(box_size=3, border=2)
-    qr_data = f"Facture N° {numero_previsionnel}\nDate: {timezone.localtime(timezone.now()).strftime('%d/%m/%Y %H:%M')}\nVendeur: {vendeur.nom_du_vendeur}\nProduit: {produit.nom_produit}\nImmatriculation: {vente_temp['license_plate']}\nPrix: {produit.prix} Fc\nDescription: {vente_temp['description']}\nImprimé par Kongo Dia Beto"
+    qr_data = f"Facture N° {numero_previsionnel}\nDate: {timezone.localtime(timezone.now()).strftime('%d/%m/%Y %H:%M')}\nVendeur: {vendeur.nom_du_vendeur}\nType d'Engin: {type_engin.nom_type_engin}\nImmatriculation: {vente_temp['license_plate']}\nPrix: {type_engin.prix} Fc\nDescription: {vente_temp['description']}\nImprimé par Kongo Dia Beto"
     qr.add_data(qr_data)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
@@ -327,12 +284,12 @@ def previsualiser_facture(request):
     img.save(buffer, format="PNG")
     qr_code_base64 = base64.b64encode(buffer.getvalue()).decode()
     context = {
-        'produit': produit,
+        'type_engin': type_engin,
         'vendeur': vendeur,
         'license_plate': vente_temp['license_plate'],
         'description': vente_temp['description'],
         'qr_code_base64': qr_code_base64,
-        'prix': produit.prix,
+        'prix': type_engin.prix,
         'now': timezone.localtime(timezone.now()),
         'numero_previsionnel': numero_previsionnel,
     }
@@ -346,13 +303,13 @@ def enregistrer_vente_apres_impression(request):
     if not vente_temp or not vendeur_id:
         return JsonResponse({'success': False, 'error': 'Session expirée'}, status=400)
     vendeur = Vendeur.objects.get(id=vendeur_id)
-    produit = Produit.objects.get(id=vente_temp['produit_id'])
+    type_engin = TypeEngin.objects.get(id=vente_temp['type_engin_id'])
     sale = Sale.objects.create(
-        produit=produit,
+        type_engin=type_engin,
         seller=vendeur,
         description=vente_temp['description'],
         license_plate=vente_temp['license_plate'],
-        price=produit.prix,
+        price=type_engin.prix,
         source='POS'
     )
     numero_facture = f"FCT-{sale.id}-{sale.created_at.strftime('%Y%m%d%H%M%S')}"
@@ -371,7 +328,7 @@ def voir_facture(request, pk):
         f"FACTURE: {facture.invoice_number.upper()}\n"
         f"DATE: {date_str}\n"
         f"VENDEUR: {sale.seller.nom_du_vendeur.upper()}\n"
-        f"PRODUIT: {sale.produit.nom_produit.upper()}\n"
+        f"TYPE D'ENGIN: {sale.type_engin.nom_type_engin.upper()}\n"
         f"IMMATRICULATION: {sale.license_plate.upper()}\n"
         f"PRIX: {str(sale.price).upper()} FC\n"
         f"DESCRIPTION: {sale.description.upper()}\n"
@@ -527,3 +484,25 @@ def root_redirect(request):
         return redirect('accueil_vendeur')
     else:
         return redirect('login')
+
+class TypeEnginCreateView(CreateView):
+    model = TypeEngin
+    form_class = TypeEnginForm
+    template_name = 'type_engin_form.html'
+    success_url = reverse_lazy('type_engin_list')
+
+class TypeEnginListView(ListView):
+    model = TypeEngin
+    template_name = 'type_engin_list.html'
+    context_object_name = 'types_engin'
+
+class TypeEnginUpdateView(UpdateView):
+    model = TypeEngin
+    form_class = TypeEnginForm
+    template_name = 'type_engin_form.html'
+    success_url = reverse_lazy('type_engin_list')
+
+class TypeEnginDeleteView(DeleteView):
+    model = TypeEngin
+    template_name = 'type_engin_confirm_delete.html'
+    success_url = reverse_lazy('type_engin_list')
