@@ -9,9 +9,9 @@ from django.contrib.auth import get_user_model, authenticate, login
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
-from .models import TypeEngin, Sale, Vendeur, POS, Invoice  # Ajout de Invoice à l'import
+from .models import TypeEngin, Sale, Vendeur, POS, Invoice, Zone
 from .serializers import TypeEnginSerializer, SaleSerializer, InvoiceSerializer, POSSerializer
-from .forms import VendeurForm, TypeEnginForm, POSForm
+from .forms import VendeurForm, TypeEnginForm, POSForm, ZoneForm
 from .vente_form import VenteForm
 import qrcode
 import base64
@@ -141,6 +141,12 @@ class POSCreateView(CreateView):
     form_class = POSForm
     template_name = 'pos_form.html'
     success_url = reverse_lazy('dashboard')
+
+class POSUpdateView(UpdateView):
+    model = POS
+    form_class = POSForm
+    template_name = 'pos_form.html'
+    success_url = reverse_lazy('pos_list')
 
 @api_view(['POST'])
 def update_pos_status(request, pos_id):
@@ -506,3 +512,38 @@ class TypeEnginDeleteView(DeleteView):
     model = TypeEngin
     template_name = 'type_engin_confirm_delete.html'
     success_url = reverse_lazy('type_engin_list')
+
+class ZoneCreateView(CreateView):
+    model = Zone
+    form_class = ZoneForm
+    template_name = 'zone_form.html'
+    success_url = reverse_lazy('zone_list')
+
+class ZoneListView(ListView):
+    model = Zone
+    template_name = 'zone_list.html'
+    context_object_name = 'zones'
+
+@login_required
+def rapport_vente_zone(request):
+    zones = Zone.objects.all()
+    zone_id = request.GET.get('zone_id')
+    date_debut = request.GET.get('date_debut')
+    date_fin = request.GET.get('date_fin')
+    ventes = Sale.objects.all()
+    zone_selected = None
+    if zone_id:
+        zone_selected = Zone.objects.get(id=zone_id)
+        ventes = ventes.filter(seller__zone=zone_selected)
+    if date_debut and date_fin:
+        ventes = ventes.filter(created_at__date__gte=date_debut, created_at__date__lte=date_fin)
+    ventes = ventes.order_by('-created_at')
+    total_ventes = ventes.aggregate(total=Sum('price'))['total'] or 0
+    return render(request, 'rapport_vente_zone.html', {
+        'ventes': ventes,
+        'zones': zones,
+        'zone_selected': zone_selected,
+        'total_ventes': total_ventes,
+        'date_debut': date_debut,
+        'date_fin': date_fin,
+    })

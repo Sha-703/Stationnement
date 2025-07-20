@@ -4,7 +4,7 @@ from django.db.models import Sum, Count, Q, F
 from django.utils.timezone import now
 from django.db import models
 from django.db.models.functions import TruncDay, TruncMonth, TruncYear
-from apps.sales.models import Sale, TypeEngin, Vendeur, POS  # Ajout de POS à l'import
+from apps.sales.models import Sale, TypeEngin, Vendeur, POS, Zone  # Ajout de Zone à l'import
 from .models import Dashboard
 from rest_framework.decorators import api_view
 from .serializers import DashboardSerializer
@@ -138,6 +138,17 @@ def dashboard_view(request):
         'data': json.dumps([float(item['total_sales']) for item in sales_by_seller]),
     }
 
+    # Répartition des ventes par zone
+    sales_by_zone = (
+        sales.values('seller__zone__nom')
+        .annotate(total_sales=Sum('price'))
+        .order_by('-total_sales')
+    )
+    bar_zone_chart_data = {
+        'labels': json.dumps([item['seller__zone__nom'] or 'Non affecté' for item in sales_by_zone]),
+        'data': json.dumps([float(item['total_sales']) for item in sales_by_zone]),
+    }
+
     # 5 dernières ventes
     last_sales = Sale.objects.select_related('type_engin', 'seller').order_by('-created_at')[:5]
     context = {
@@ -149,6 +160,7 @@ def dashboard_view(request):
         'total_pos': total_pos,
         'sales_chart_data': sales_chart_data,
         'pie_chart_data': pie_chart_data,
+        'bar_zone_chart_data': bar_zone_chart_data,
         'last_sales': last_sales,
     }
     return render(request, 'dashboard.html', context)

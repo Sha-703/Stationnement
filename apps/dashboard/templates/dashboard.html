@@ -125,6 +125,16 @@
             </div>
         </div>
     </div>
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Ventes par zone</h5>
+                    <canvas id="zoneBarChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 
@@ -169,6 +179,20 @@
                     borderColor: '#fff',
                 }
             ],
+        };
+
+        // Données pour le graphique en barres par zone
+        const zoneBarData = {
+            labels: JSON.parse('{{ bar_zone_chart_data.labels|escapejs }}'),
+            datasets: [
+                {
+                    label: 'Ventes par zone',
+                    data: JSON.parse('{{ bar_zone_chart_data.data|escapejs }}'),
+                    backgroundColor: '#2563eb',
+                    borderColor: '#181f2a',
+                    borderWidth: 2,
+                }
+            ]
         };
 
         // Option 3: options personnalisées
@@ -243,6 +267,38 @@
                 easing: 'easeInOutQuart'
             }
         };
+        const zoneBarOptions = {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                title: {
+                    display: true,
+                    text: 'Ventes par zone',
+                    color: '#2563eb',
+                    font: { size: 20, weight: 'bold' }
+                },
+                tooltip: {
+                    enabled: true,
+                    backgroundColor: '#2563eb',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                },
+            },
+            animation: {
+                duration: 1200,
+                easing: 'easeInOutQuart'
+            },
+            scales: {
+                x: {
+                    grid: { color: '#e5e7eb' },
+                    ticks: { color: '#181f2a', font: { size: 14 } }
+                },
+                y: {
+                    grid: { color: '#e5e7eb' },
+                    ticks: { color: '#181f2a', font: { size: 14 } }
+                }
+            }
+        };
 
         // Option 5: arrondir les coins (pour les barres, ici exemple sur pie)
         Chart.defaults.elements.arc.borderRadius = 8;
@@ -258,6 +314,12 @@
             type: 'doughnut', // Option 1: changer ici pour 'pie', 'doughnut', etc.
             data: pieData,
             options: pieChartOptions
+        });
+
+        const zoneBarChart = new Chart(document.getElementById('zoneBarChart'), {
+            type: 'bar',
+            data: zoneBarData,
+            options: zoneBarOptions
         });
 
         // Simulation de données (à retirer une fois les vraies données disponibles)

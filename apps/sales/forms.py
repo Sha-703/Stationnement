@@ -1,5 +1,5 @@
 from django import forms
-from .models import Sale, Vendeur, TypeEngin, POS
+from .models import Sale, Vendeur, TypeEngin, POS, Zone
 
 class SaleForm(forms.ModelForm):
     class Meta:
@@ -15,10 +15,15 @@ class SaleForm(forms.ModelForm):
             instance.save()
         return instance
 
+class ZoneForm(forms.ModelForm):
+    class Meta:
+        model = Zone
+        fields = ['nom', 'description']
+
 class VendeurForm(forms.ModelForm):
     class Meta:
         model = Vendeur
-        fields = ['nom_du_vendeur', 'email']
+        fields = ['nom_du_vendeur', 'email', 'zone']
 
 class TypeEnginForm(forms.ModelForm):
     class Meta:
