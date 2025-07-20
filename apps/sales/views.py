@@ -547,3 +547,34 @@ def rapport_vente_zone(request):
         'date_debut': date_debut,
         'date_fin': date_fin,
     })
+
+@login_required
+def rapport_vente_zone_print(request):
+    zones = Zone.objects.all()
+    zone_id = request.GET.get('zone_id')
+    date_debut = request.GET.get('date_debut')
+    date_fin = request.GET.get('date_fin')
+    ventes = Sale.objects.all()
+    zone_selected = None
+    # Correction: ne filtrer que si date_debut/date_fin sont valides
+    def is_valid_date(val):
+        return val and val != 'None'
+    zone_stats = []
+    for zone in zones:
+        ventes_zone = ventes.filter(seller__zone=zone)
+        if is_valid_date(date_debut) and is_valid_date(date_fin):
+            ventes_zone = ventes_zone.filter(created_at__date__gte=date_debut, created_at__date__lte=date_fin)
+        nb_ventes = ventes_zone.count()
+        total_ventes = ventes_zone.aggregate(total=Sum('price'))['total'] or 0
+        zone_stats.append({
+            'nom': zone.nom,
+            'nb_ventes': nb_ventes,
+            'total_ventes': total_ventes,
+        })
+    periode = None
+    if is_valid_date(date_debut) and is_valid_date(date_fin):
+        periode = f"{date_debut} au {date_fin}"
+    return render(request, 'rapport_vente_zone_print.html', {
+        'zones': zone_stats,
+        'periode': periode,
+    })

@@ -26,6 +26,11 @@
             <button type="submit" class="btn btn-primary w-100">Filtrer</button>
         </div>
     </form>
+    <div class="text-end mb-3">
+        <a href="{% url 'rapport_vente_zone_print' %}?zone_id={% if zone_selected %}{{ zone_selected.id }}{% endif %}&date_debut={{ date_debut }}&date_fin={{ date_fin }}" target="_blank" class="btn btn-outline-secondary">
+            <i class="bi bi-printer"></i> Imprimer le rapport
+        </a>
+    </div>
     <div class="mb-3">
         <strong>Total ventes :</strong> {{ total_ventes|floatformat:2|intcomma }} Fc
     </div>
@@ -54,9 +59,6 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>
-    <div class="text-end mt-3">
-        <button onclick="window.print()" class="btn btn-outline-secondary"><i class="bi bi-printer"></i> Imprimer le rapport</button>
     </div>
 </div>
 {% endblock %}

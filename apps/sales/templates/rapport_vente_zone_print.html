@@ -1,0 +1,43 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Impression Rapport Ventes par Zone</title>
+    <style>
+        body { background: #fff; font-family: Arial, sans-serif; }
+        .rapport-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .rapport-table th, .rapport-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .rapport-table th { background: #1883e6; color: #fff; }
+        .rapport-title { text-align: center; font-size: 1.5rem; margin-top: 20px; color: #1883e6; }
+        @media print {
+            body { margin: 0; }
+            .rapport-title { margin-top: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="rapport-title">Rapport des ventes par zone</div>
+    <table class="rapport-table">
+        <thead>
+            <tr>
+                <th>Zone</th>
+                <th>Nombre de ventes</th>
+                <th>Total des ventes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for zone in zones %}
+            <tr>
+                <td>{{ zone.nom }}</td>
+                <td>{{ zone.nb_ventes }}</td>
+                <td>{{ zone.total_ventes|intcomma }} F</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if periode %}
+    <div style="margin-top:20px;text-align:center;">Période : {{ periode }}</div>
+    {% endif %}
+</body>
+</html>

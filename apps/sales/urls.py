@@ -10,7 +10,7 @@ from .views import (
     rapport_vente_vendeur_print, login_view, enregistrer_vente_apres_impression, logout_utilisateur,
     TypeEnginListView, TypeEnginCreateView, TypeEnginUpdateView, TypeEnginDeleteView,
     ZoneListView, ZoneCreateView,
-    rapport_vente_zone
+    rapport_vente_zone, rapport_vente_zone_print
 )
 
 router = DefaultRouter()
@@ -68,4 +68,5 @@ urlpatterns = [
     path('zones/ajouter/', ZoneCreateView.as_view(), name='zone_create'),
 
     path('rapport-zone/', rapport_vente_zone, name='rapport_vente_zone'),
+    path('rapport-zone/print/', rapport_vente_zone_print, name='rapport_vente_zone_print'),
 ]
