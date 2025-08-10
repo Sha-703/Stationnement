@@ -15,6 +15,10 @@ from django.views.generic import TemplateView
 import json
 from itertools import chain
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+import openai
+import os
+from django.conf import settings
 
 @api_view(['GET'])
 def dashboard_overview(request):
@@ -151,6 +155,10 @@ def dashboard_view(request):
 
     # 5 dernières ventes
     last_sales = Sale.objects.select_related('type_engin', 'seller').order_by('-created_at')[:5]
+    # Calcul du Revenu Journalier (ventes du jour)
+    today = datetime.date.today()
+    daily_revenue = Sale.objects.filter(created_at__date=today).aggregate(total=Sum('price'))['total'] or 0
+
     context = {
         'sales': all_sales,
         'total_sales': total_sales,
@@ -162,6 +170,7 @@ def dashboard_view(request):
         'pie_chart_data': pie_chart_data,
         'bar_zone_chart_data': bar_zone_chart_data,
         'last_sales': last_sales,
+        'daily_revenue': daily_revenue,
     }
     return render(request, 'dashboard.html', context)
 
