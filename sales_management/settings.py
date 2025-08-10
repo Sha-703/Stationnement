@@ -23,7 +23,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'unsafe-default-key')
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'Ktaxe.onrender.com',  # Remplace par ton vrai domaine Render si besoin
+    'ktaxe.onrender.com',  # Remplace par ton vrai domaine Render si besoin
     'localhost',
     '127.0.0.1',
 ]
@@ -129,12 +129,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 # Pour production, tu peux restreindre à :
 # CORS_ALLOWED_ORIGINS = [
-#     "https://Ktaxe.onrender.com/",
+#     "https://ktaxe.onrender.com/",
 #     "file://",
 # ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://Ktaxe.onrender.com',
+    'https://ktaxe.onrender.com',
     'https://localhost',
     'https://127.0.0.1',
 ]
